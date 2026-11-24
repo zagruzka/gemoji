@@ -1,5 +1,5 @@
-import { pickRandom, shuffle, type GameActionResult, type GameInitContext, type GameResult } from "@undercover/game-core";
-import type { ChatChannel, Player } from "@undercover/shared";
+import { pickRandom, shuffle, type GameActionResult, type GameInitContext, type GameResult } from "@gemoji/game-core";
+import type { ChatChannel, Player } from "@gemoji/shared";
 import type { UndercoverAction } from "./actions";
 import {
   SKIP_VOTE_TARGET,

@@ -1,4 +1,4 @@
-import type { ChatChannel, Player } from "@undercover/shared";
+import type { ChatChannel, Player } from "@gemoji/shared";
 
 export type VoteDurationOption = "unlimited" | 30 | 60 | 120;
 export type VoteMode = "open" | "secret";

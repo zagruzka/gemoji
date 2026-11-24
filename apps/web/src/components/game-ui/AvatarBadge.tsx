@@ -1,4 +1,4 @@
-import { AVATAR_IDS, type AvatarId } from "@undercover/shared";
+import { AVATAR_IDS, type AvatarId } from "@gemoji/shared";
 
 interface AvatarMeta {
   emoji: string;

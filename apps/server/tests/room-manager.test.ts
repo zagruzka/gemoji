@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { GameRegistry } from "@undercover/game-core";
-import { undercoverGameModule, type UndercoverPlayerView } from "@undercover/game-undercover";
-import type { ServerMessage } from "@undercover/shared";
+import { GameRegistry } from "@gemoji/game-core";
+import { undercoverGameModule, type UndercoverPlayerView } from "@gemoji/game-undercover";
+import type { ServerMessage } from "@gemoji/shared";
 import { RoomManager, type ClientSocketSink } from "../src/rooms/manager";
 import { InMemoryRoomStore } from "../src/rooms/store";
 

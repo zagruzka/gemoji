@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ClientMessage, ServerMessage } from "@undercover/shared";
+import type { ClientMessage, ServerMessage } from "@gemoji/shared";
 
 const TOKEN_STORAGE_KEY = "gemoji_guest_token";
 

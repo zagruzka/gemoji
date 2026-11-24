@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { BaseGameState, GameResult, VoteDurationOption, VoteMode } from "@undercover/game-core";
-import type { AvatarId } from "@undercover/shared";
+import type { BaseGameState, GameResult, VoteDurationOption, VoteMode } from "@gemoji/game-core";
+import type { AvatarId } from "@gemoji/shared";
 
 export type UndercoverRole = "citizen" | "undercover" | "mr_blank";
 export type WordMode = "library" | "custom";

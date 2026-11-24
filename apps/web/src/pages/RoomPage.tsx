@@ -1,11 +1,11 @@
-import type { UndercoverConfig, UndercoverPlayerView } from "@undercover/game-undercover";
+import type { UndercoverConfig, UndercoverPlayerView } from "@gemoji/game-undercover";
 import type {
   AvatarId,
   ChatChannel,
   ChatMessage,
   RoomPublicState,
   ServerMessage,
-} from "@undercover/shared";
+} from "@gemoji/shared";
 import {
   ArrowLeft,
   Clock,

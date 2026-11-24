@@ -1,11 +1,11 @@
-import type { GameRegistry } from "@undercover/game-core";
+import type { GameRegistry } from "@gemoji/game-core";
 import type {
   AvatarId,
   ChatChannel,
   ChatMessage,
   RoomPublicState,
   ServerMessage,
-} from "@undercover/shared";
+} from "@gemoji/shared";
 import { pickLibraryWordPairFromDb } from "../db";
 import type { RoomRecord, RoomStore } from "./store";
 

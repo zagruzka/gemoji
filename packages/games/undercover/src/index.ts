@@ -1,4 +1,4 @@
-import type { GameModule } from "@undercover/game-core";
+import type { GameModule } from "@gemoji/game-core";
 import { UndercoverActionSchema, type UndercoverAction } from "./actions";
 import {
   getUndercoverChatChannels,

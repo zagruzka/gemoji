@@ -2,7 +2,7 @@ import {
   SKIP_VOTE_TARGET,
   type UndercoverPlayerView,
   type UndercoverRole,
-} from "@undercover/game-undercover";
+} from "@gemoji/game-undercover";
 import {
   Check,
   Clock,

@@ -1,4 +1,4 @@
-import { AVATAR_IDS, type AvatarId } from "@undercover/shared";
+import { AVATAR_IDS, type AvatarId } from "@gemoji/shared";
 
 const PROFILE_STORAGE_KEY = "gemoji_guest_profile";
 

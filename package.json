@@ -1,5 +1,5 @@
 {
-  "name": "undercover-monorepo",
+  "name": "gemoji",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -8,11 +8,13 @@
   ],
   "scripts": {
     "dev": "bun run --parallel dev:server dev:web",
-    "dev:server": "bun --filter @undercover/server dev",
-    "dev:web": "bun --filter @undercover/web dev",
-    "build": "bun --filter @undercover/web build",
+    "dev:server": "bun --filter @gemoji/server dev",
+    "dev:web": "bun --filter @gemoji/web dev",
+    "build": "bun --filter @gemoji/web build",
+    "start": "bun --filter @gemoji/server start",
+    "prod": "bun run build && bun run start",
     "test": "bun test",
-    "db:seed": "bun --filter @undercover/server db:seed",
+    "db:seed": "bun --filter @gemoji/server db:seed",
     "typecheck": "bun --filter '*' typecheck"
   },
   "devDependencies": {

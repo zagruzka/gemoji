@@ -1,5 +1,5 @@
-import { UndercoverConfigSchema, type UndercoverConfig } from "@undercover/game-undercover";
-import type { RoomPublicState } from "@undercover/shared";
+import { UndercoverConfigSchema, type UndercoverConfig } from "@gemoji/game-undercover";
+import type { RoomPublicState } from "@gemoji/shared";
 import { Check, Copy, Crown, Play, UserX, Wifi, WifiOff } from "lucide-react";
 import { useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";

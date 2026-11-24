@@ -1,5 +1,5 @@
 {
-  "name": "@undercover/game-core",
+  "name": "@gemoji/game-core",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,6 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@undercover/shared": "workspace:*"
+    "@gemoji/shared": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@undercover/game-undercover",
+  "name": "@gemoji/game-undercover",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,8 +13,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@undercover/game-core": "workspace:*",
-    "@undercover/shared": "workspace:*",
+    "@gemoji/game-core": "workspace:*",
+    "@gemoji/shared": "workspace:*",
     "zod": "^3.24.2"
   }
 }

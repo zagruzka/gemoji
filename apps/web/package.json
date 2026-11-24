@@ -1,5 +1,5 @@
 {
-  "name": "@undercover/web",
+  "name": "@gemoji/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@undercover/game-core": "workspace:*",
-    "@undercover/game-undercover": "workspace:*",
-    "@undercover/shared": "workspace:*",
+    "@gemoji/game-core": "workspace:*",
+    "@gemoji/game-undercover": "workspace:*",
+    "@gemoji/shared": "workspace:*",
     "lucide-react": "^0.483.0",
     "motion": "^12.6.0",
     "react": "^19.0.0",

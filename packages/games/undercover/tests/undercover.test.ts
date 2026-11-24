@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { createSeededRng } from "@undercover/game-core";
-import type { Player } from "@undercover/shared";
+import { createSeededRng } from "@gemoji/game-core";
+import type { Player } from "@gemoji/shared";
 import { SKIP_VOTE_TARGET, undercoverGameModule } from "../src/index";
 
 function makePlayers(count: number): Player[] {

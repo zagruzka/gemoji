@@ -1,4 +1,4 @@
-import type { ChatChannel, ChatMessage } from "@undercover/shared";
+import type { ChatChannel, ChatMessage } from "@gemoji/shared";
 import { Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { GameButton } from "../../components/game-ui";

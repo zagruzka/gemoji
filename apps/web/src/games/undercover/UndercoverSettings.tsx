@@ -1,4 +1,4 @@
-import type { UndercoverConfig } from "@undercover/game-undercover";
+import type { UndercoverConfig } from "@gemoji/game-undercover";
 import { BookOpen, Check, Clock, Eye, EyeOff, Minus, PenLine, Plus } from "lucide-react";
 
 interface UndercoverSettingsProps {

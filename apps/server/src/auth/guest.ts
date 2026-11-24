@@ -1,4 +1,4 @@
-const SESSION_SECRET = process.env.SESSION_SECRET ?? "dev-undercover-guest-secret-change-in-prod";
+const SESSION_SECRET = process.env.SESSION_SECRET ?? "dev-gemoji-guest-secret-change-in-prod";
 
 function signPlayerId(playerId: string): string {
   const hasher = new Bun.CryptoHasher("sha256", SESSION_SECRET);

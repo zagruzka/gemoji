@@ -1,7 +1,8 @@
+import { resolve } from "node:path";
 import { cors } from "@elysiajs/cors";
-import { gameRegistry, type GameMeta } from "@undercover/game-core";
-import { undercoverGameModule } from "@undercover/game-undercover";
-import { ClientMessageSchema, type ServerMessage } from "@undercover/shared";
+import { gameRegistry, type GameMeta } from "@gemoji/game-core";
+import { undercoverGameModule } from "@gemoji/game-undercover";
+import { ClientMessageSchema, type ServerMessage } from "@gemoji/shared";
 import { Elysia, t } from "elysia";
 import { createGuestToken, verifyGuestToken } from "./auth/guest";
 import { seedDefaultWordsIfEmpty } from "./db";
@@ -42,6 +43,51 @@ interface WsClientState {
 }
 
 const wsStates = new WeakMap<object, WsClientState>();
+
+const WEB_DIST_DIR = resolve(import.meta.dir, "../../web/dist");
+const INDEX_HTML_PATH = resolve(WEB_DIST_DIR, "index.html");
+
+async function serveWebAsset(pathname: string): Promise<Response> {
+  if (pathname === "/api" || pathname.startsWith("/api/") || pathname === "/ws") {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname).replace(/^\/+/, "");
+  } catch {
+    return new Response("Bad Request", { status: 400 });
+  }
+  if (decoded && !decoded.endsWith("/")) {
+    const candidate = resolve(WEB_DIST_DIR, decoded);
+    if (!candidate.startsWith(`${WEB_DIST_DIR}/`)) {
+      return new Response("Forbidden", { status: 403 });
+    }
+    const file = Bun.file(candidate);
+    if (await file.exists()) {
+      const cacheControl = decoded.startsWith("assets/")
+        ? "public, max-age=31536000, immutable"
+        : "public, max-age=3600";
+      return new Response(file, {
+        headers: { "Cache-Control": cacheControl },
+      });
+    }
+  }
+
+  const indexFile = Bun.file(INDEX_HTML_PATH);
+  if (await indexFile.exists()) {
+    return new Response(indexFile, {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-cache",
+      },
+    });
+  }
+
+  return new Response("Frontend belum di-build. Jalankan `bun run build` terlebih dahulu.", {
+    status: 404,
+  });
+}
 
 const app = new Elysia()
   .use(cors())
@@ -202,11 +248,14 @@ const app = new Elysia()
       }
       wsStates.delete(ws.raw);
     },
-  });
+  })
+  .get("/", ({ request }) => serveWebAsset(new URL(request.url).pathname))
+  .get("/*", ({ request }) => serveWebAsset(new URL(request.url).pathname));
 
 const PORT = Number(process.env.PORT ?? 3001);
-app.listen(PORT);
+const HOSTNAME = process.env.HOST ?? "0.0.0.0";
+app.listen({ port: PORT, hostname: HOSTNAME });
 
-console.log(`🎮 Gemoji! Server running at http://localhost:${PORT} (${wordCount} kata siap)`);
+console.log(`🎮 Gemoji! Server running at http://${HOSTNAME}:${PORT} (${wordCount} kata siap)`);
 
 export type App = typeof app;

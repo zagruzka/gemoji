@@ -1,4 +1,4 @@
-import type { AvatarId } from "@undercover/shared";
+import type { AvatarId } from "@gemoji/shared";
 import {
   BookOpen,
   Gamepad2,

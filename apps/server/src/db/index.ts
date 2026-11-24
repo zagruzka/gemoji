@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { resolve } from "node:path";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { eq } from "drizzle-orm";
-import { DEFAULT_UNDERCOVER_WORDS } from "@undercover/game-undercover/words";
+import { DEFAULT_UNDERCOVER_WORDS } from "@gemoji/game-undercover/words";
 import * as schema from "./schema";
 
 const DEFAULT_DB_PATH = resolve(import.meta.dir, "../../gemoji.sqlite");

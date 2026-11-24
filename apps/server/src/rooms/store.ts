@@ -1,5 +1,5 @@
-import type { BaseGameState } from "@undercover/game-core";
-import type { ChatMessage, Player, RoomStatus } from "@undercover/shared";
+import type { BaseGameState } from "@gemoji/game-core";
+import type { ChatMessage, Player, RoomStatus } from "@gemoji/shared";
 
 export interface RoomRecord {
   roomCode: string;
