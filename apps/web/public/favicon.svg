@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Flat game controller silhouette (transparent background) -->
+  <path
+    d="M19.5 16H44.5C51.6 16 57 21.8 58 29.8L59.4 40.2C60.1 45.4 56 50 50.8 50C47.7 50 44.8 48.3 43.2 45.6L40.2 40.5C39.2 38.8 37.4 37.8 35.4 37.8H28.6C26.6 37.8 24.8 38.8 23.8 40.5L20.8 45.6C19.2 48.3 16.3 50 13.2 50C8 50 3.9 45.4 4.6 40.2L6 29.8C7 21.8 12.4 16 19.5 16Z"
+    fill="#E83670"
+  />
+  <!-- Flat D-Pad -->
+  <rect x="19" y="21.5" width="4.5" height="13" rx="2" fill="#FFFFFF" />
+  <rect x="14.75" y="25.75" width="13" height="4.5" rx="2" fill="#FFFFFF" />
+  <!-- Flat Action Buttons -->
+  <circle cx="46" cy="24.5" r="3" fill="#FFFFFF" />
+  <circle cx="40.5" cy="30.5" r="3" fill="#FFFFFF" />
+</svg>

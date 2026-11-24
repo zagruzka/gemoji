@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    color: #3a2b3d;
+    background-color: #60a99f;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Crisp dark outline effect for ribbon titles inspired by casual arcade UI */
+.game-title-stroke {
+  text-shadow:
+    0 2px 0 #5b102d,
+    0 -1.5px 0 #5b102d,
+    1.5px 0 0 #5b102d,
+    -1.5px 0 0 #5b102d,
+    1.5px 2px 0 #5b102d,
+    -1.5px 2px 0 #5b102d,
+    0 4px 6px rgba(65, 9, 31, 0.35);
+}
+
+.game-number-stroke {
+  text-shadow:
+    0 1.5px 0 #3f2b3d,
+    1px 0 0 #3f2b3d,
+    -1px 0 0 #3f2b3d,
+    0 -1px 0 #3f2b3d;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "undercover-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/games/*"
+  ],
+  "scripts": {
+    "dev": "bun run --parallel dev:server dev:web",
+    "dev:server": "bun --filter @undercover/server dev",
+    "dev:web": "bun --filter @undercover/web dev",
+    "build": "bun --filter @undercover/web build",
+    "test": "bun test",
+    "db:seed": "bun --filter @undercover/server db:seed",
+    "typecheck": "bun --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.8.0"
+  }
+}
