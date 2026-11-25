@@ -1,6 +1,7 @@
 import type { AvatarId } from "@gemoji/shared";
 import {
   HelpCircleIcon,
+  InfoIcon,
   PlayIcon,
   SparklesIcon,
   UsersIcon,
@@ -46,6 +47,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
 
   useEffect(() => {
@@ -128,8 +130,8 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
           />
         </div>
 
-        <IconButton tone="gold" title="Aturan Main Gemoji" onClick={() => setShowRulesModal(true)}>
-          <HelpCircleIcon className="size-5" />
+        <IconButton tone="gold" title="Tentang Gemoji" onClick={() => setShowAboutModal(true)}>
+          <InfoIcon className="size-5" />
         </IconButton>
       </header>
 
@@ -213,7 +215,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
             </GameButton>
 
             <GameButton
-              variant="cyan"
+              variant="green"
               size="md"
               fullWidth
               onClick={() => {
@@ -225,7 +227,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
             </GameButton>
 
             <GameButton
-              variant="green"
+              variant="white"
               size="md"
               fullWidth
               onClick={() => setShowRulesModal(true)}
@@ -287,6 +289,42 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
         </div>
       )}
 
+      {/* About Modal */}
+      {showAboutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
+          <GamePanel
+            title="Tentang Gemoji"
+            ribbonColor="pink"
+            onClose={() => setShowAboutModal(false)}
+            className="w-full max-w-md"
+          >
+            <div className="space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#c72258]">Apa itu Gemoji?</div>
+                <p>
+                  <strong>Gemoji!</strong> adalah platform party game multiplayer berbasis web untuk
+                  main bareng teman secara real-time langsung dari browser HP maupun laptop tanpa
+                  perlu install aplikasi atau buat akun.
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#1b6d34]">Fitur Utama</div>
+                <ul className="mt-1 list-disc space-y-1 pl-4">
+                  <li>Masuk cepat cukup dengan nickname &amp; avatar pilihanmu.</li>
+                  <li>Buat room privat dengan kode &amp; link undangan instan.</li>
+                  <li>Obrolan room real-time &amp; auto-reconnect jika koneksi terputus.</li>
+                  <li>Mendukung berbagai game seru yang akan terus bertambah.</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-3 text-xs leading-relaxed">
+                <strong>Catatan:</strong> Aturan dan cara bermain masing-masing game dapat dibuka
+                langsung dari dalam room game yang dipilih.
+              </div>
+            </div>
+          </GamePanel>
+        </div>
+      )}
+
       {/* Rules Modal */}
       {showRulesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
@@ -296,7 +334,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
             onClose={() => setShowRulesModal(false)}
             className="w-full max-w-md"
           >
-            <div className="max-h-[65dvh] space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
+            <div className="space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
               <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
                 <div className="font-display text-base text-[#1b6d34]">1. Siapkan Profil &amp; Pilih Game</div>
                 <p>

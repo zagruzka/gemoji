@@ -18,7 +18,7 @@ const VARIANT_STYLES: Record<GameButtonVariant, string> = {
   green:
     "bg-gradient-to-b from-[#c0ff3e] via-[#7ae622] to-[#3dbe18] text-[#154524] border-[#e2ff99] shadow-[0_6px_0_#1e7d75,0_10px_16px_rgba(14,68,58,0.28)] hover:brightness-105 active:shadow-[0_2px_0_#1e7d75,0_4px_8px_rgba(14,68,58,0.22)]",
   white:
-    "bg-gradient-to-b from-[#ffffff] via-[#f1f5f8] to-[#d9e1e7] text-[#3a424c] border-white shadow-[0_6px_0_#8894a0,0_10px_16px_rgba(35,44,54,0.22)] hover:brightness-102 active:shadow-[0_2px_0_#8894a0,0_4px_8px_rgba(35,44,54,0.18)]",
+    "bg-gradient-to-b from-[#eeeeee] via-[#f1f5f8] to-[#d9e1e7] text-[#3a424c] border-white shadow-[0_6px_0_#8894a0,0_10px_16px_rgba(35,44,54,0.22)] hover:brightness-102 active:shadow-[0_2px_0_#8894a0,0_4px_8px_rgba(35,44,54,0.18)]",
   pink:
     "bg-gradient-to-b from-[#ff72a0] via-[#ee3e79] to-[#d4245f] text-white border-[#ffb4ce] shadow-[0_6px_0_#8f143e,0_10px_16px_rgba(92,10,38,0.32)] hover:brightness-105 active:shadow-[0_2px_0_#8f143e,0_4px_8px_rgba(92,10,38,0.24)]",
 };

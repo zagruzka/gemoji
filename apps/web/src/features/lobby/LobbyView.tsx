@@ -1,6 +1,6 @@
 import { UndercoverConfigSchema, type UndercoverConfig } from "@gemoji/game-undercover";
 import type { RoomPublicState } from "@gemoji/shared";
-import { CheckIcon, CopyIcon, CrownIcon, PlayIcon, UserXIcon, WifiIcon, WifiOffIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, CrownIcon, HelpCircleIcon, PlayIcon, UserXIcon, WifiIcon, WifiOffIcon } from "lucide-react";
 import { useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
 import { UndercoverSettings } from "../../games/undercover/UndercoverSettings";
@@ -11,6 +11,7 @@ interface LobbyViewProps {
   onUpdateConfig: (patch: Partial<UndercoverConfig>) => void;
   onKickPlayer: (targetPlayerId: string) => void;
   onStartGame: () => void;
+  onOpenRules: () => void;
   onLeave: () => void;
 }
 
@@ -20,6 +21,7 @@ export function LobbyView({
   onUpdateConfig,
   onKickPlayer,
   onStartGame,
+  onOpenRules,
   onLeave,
 }: LobbyViewProps) {
   const [copied, setCopied] = useState(false);
@@ -162,7 +164,12 @@ export function LobbyView({
             </div>
           )}
 
-          <GameButton variant="white" size="sm" fullWidth onClick={onLeave}>
+          <GameButton variant="white" size="sm" fullWidth onClick={onOpenRules}>
+            <HelpCircleIcon className="h-4 w-4" />
+            Cara Bermain
+          </GameButton>
+
+          <GameButton variant="pink" size="sm" fullWidth onClick={onLeave}>
             Keluar ke Beranda
           </GameButton>
         </div>

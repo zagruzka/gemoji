@@ -1,5 +1,5 @@
 import type { UndercoverConfig } from "@gemoji/game-undercover";
-import { BookOpenIcon, CheckIcon, ClockIcon, EyeIcon, EyeOffIcon, InfinityIcon, MinusIcon, PenLineIcon, PlusIcon } from "lucide-react";
+import { BookOpenIcon, CheckIcon, EyeIcon, EyeOffIcon, InfinityIcon, MinusIcon, PenLineIcon, PlusIcon } from "lucide-react";
 
 interface UndercoverSettingsProps {
   config: UndercoverConfig;
@@ -184,9 +184,7 @@ export function UndercoverSettings({
                 <PlusIcon className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="mt-1 text-center text-[10px] font-bold text-[#8a7d63]">
-              Kata Mirip
-            </div>
+            <div className="mt-1 text-center text-[10px] font-bold text-[#8a7d63]">Kata Samar</div>
           </div>
 
           {/* Mr. Blank */}
@@ -293,7 +291,7 @@ export function UndercoverSettings({
       {/* Blind Role Checklist */}
       <label
         className={[
-          "flex items-center gap-3 rounded-2xl border-2 px-3.5 py-2.5 transition select-none",
+          "flex items-center gap-3 rounded-2xl border-2 px-4 py-2 transition select-none",
           config.blindRole
             ? "border-[#5ac92e] bg-[#f4ffe8]"
             : "border-[#d8cfa3] bg-[#fffdf0]",
@@ -321,7 +319,7 @@ export function UndercoverSettings({
         <div className="min-w-0">
           <div className="font-display text-sm font-bold text-[#3d2940]">Blind Role</div>
           <div className="text-[11px] font-bold text-[#786b51]">
-            Citizen &amp; Undercover tidak tahu role-nya di awal.
+            Citizen &amp; Undercover tidak mengetahui role-nya
           </div>
         </div>
       </label>

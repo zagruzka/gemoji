@@ -62,6 +62,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
   const [chatBubble, setChatBubble] = useState<ChatMessage | null>(null);
   const [roomMissing, setRoomMissing] = useState(false);
   const [wordsLoaded, setWordsLoaded] = useState<number | null>(null);
+  const [showRulesModal, setShowRulesModal] = useState(false);
 
   const chatOpenRef = useRef(chatOpen);
   chatOpenRef.current = chatOpen;
@@ -414,6 +415,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
               send({ type: "ROOM_KICK_PLAYER", payload: { targetPlayerId } })
             }
             onStartGame={() => send({ type: "ROOM_START_GAME", payload: {} })}
+            onOpenRules={() => setShowRulesModal(true)}
             onLeave={onExitHome}
           />
         ) : (
@@ -441,6 +443,49 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
           send({ type: "CHAT_SEND", payload: { channel, content } })
         }
       />
+
+      {/* Undercover How-to-Play Modal */}
+      {showRulesModal && room?.gameId === "undercover" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
+          <GamePanel
+            title="Cara Bermain Undercover"
+            ribbonColor="pink"
+            onClose={() => setShowRulesModal(false)}
+            className="w-full max-w-md"
+          >
+            <div className="space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#1b6d34]">1. Citizen</div>
+                <p>
+                  Mendapat kata utama yang sama. Beri clue singkat, lalu cari &amp; eliminasi semua
+                  Undercover dan Mr. Blank!
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#c72258]">2. Undercover</div>
+                <p>
+                  Mendapat kata yang mirip tapi berbeda. Berbaurlah dengan clue yang masuk akal dan
+                  bertahan hidup sampai akhir!
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#6540bb]">3. Mr. Blank</div>
+                <p>
+                  Tidak mendapat kata sama sekali! Jika tereliminasi, Mr. Blank punya 1 kesempatan
+                  menebak kata Citizen untuk <strong>langsung menang</strong>.
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-3 text-xs leading-relaxed">
+                <strong>Pengaturan Game:</strong> Host bisa memilih <em>Library (Acak)</em> atau{" "}
+                <em>Custom Word</em> (tiap pemain menyumbang 1 pasang kata), mengatur{" "}
+                <strong>Timer Clue</strong> (atau <em>Skip</em> untuk main tatap muka),{" "}
+                <strong>Waktu Vote</strong> (Unlimited / 30s / 60s / 120s), serta{" "}
+                <strong>Mode Vote</strong> (Terbuka / Rahasia, bisa Skip).
+              </div>
+            </div>
+          </GamePanel>
+        </div>
+      )}
     </div>
   );
 }
