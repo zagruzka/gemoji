@@ -22,8 +22,10 @@ export interface GameResult {
 export interface GameInitContext {
   now: number;
   rng?: () => number;
-  /** Optional external word pair fetcher (e.g. from bun:sqlite) */
+  /** Optional external word pair fetcher (e.g. from bun:sqlite for Undercover) */
   pickLibraryWordPair?: (usedKeys: Set<string>) => { wordA: string; wordB: string } | null;
+  /** Optional external single-word list (e.g. from bun:sqlite for Wordtrap) */
+  libraryWords?: string[];
   /** Optional state persisted across rounds in the same room session (e.g. custom word pool) */
   previousSessionData?: unknown;
 }

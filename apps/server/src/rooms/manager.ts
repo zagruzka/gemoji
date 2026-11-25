@@ -6,27 +6,79 @@ import type {
   RoomPublicState,
   ServerMessage,
 } from "@gemoji/shared";
-import { pickLibraryWordPairFromDb } from "../db";
+import { getAllWordtrapWordsFromDb, pickLibraryWordPairFromDb } from "../db";
 import type { RoomRecord, RoomStore } from "./store";
 
 const ROOM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Tanpa 0/O/1/I agar mudah dibaca
 const MAX_CHAT_HISTORY = 100;
 const CHAT_RATE_LIMIT_MAX = 5;
 const CHAT_RATE_LIMIT_WINDOW_MS = 5_000;
+const DEFAULT_EMPTY_ROOM_TTL_MS = 3 * 60 * 1000; // 3 menit kosong -> tutup room otomatis
 
 export interface ClientSocketSink {
   send(message: ServerMessage): void;
 }
 
+export interface RoomManagerOptions {
+  emptyRoomTtlMs?: number;
+}
+
 export class RoomManager {
   private readonly socketsByRoom = new Map<string, Map<string, ClientSocketSink>>();
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly shutdownTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly chatTimestampsByPlayer = new Map<string, number[]>();
+  private readonly emptyRoomTtlMs: number;
 
   constructor(
     private readonly store: RoomStore,
     private readonly registry: GameRegistry,
-  ) {}
+    options?: RoomManagerOptions,
+  ) {
+    this.emptyRoomTtlMs = options?.emptyRoomTtlMs ?? DEFAULT_EMPTY_ROOM_TTL_MS;
+  }
+
+  private cancelShutdownTimer(roomCode: string): void {
+    const existing = this.shutdownTimers.get(roomCode);
+    if (existing) {
+      clearTimeout(existing);
+      this.shutdownTimers.delete(roomCode);
+    }
+  }
+
+  private shutdownRoom(roomCode: string): void {
+    this.cancelShutdownTimer(roomCode);
+    const phaseTimer = this.timers.get(roomCode);
+    if (phaseTimer) {
+      clearTimeout(phaseTimer);
+      this.timers.delete(roomCode);
+    }
+    this.socketsByRoom.delete(roomCode);
+    this.store.delete(roomCode);
+  }
+
+  private syncShutdownTimer(room: RoomRecord): void {
+    const onlineCount = room.players.filter((p) => p.isConnected).length;
+    if (onlineCount > 0) {
+      this.cancelShutdownTimer(room.roomCode);
+      return;
+    }
+
+    if (this.shutdownTimers.has(room.roomCode)) return;
+
+    const timer = setTimeout(() => {
+      this.shutdownTimers.delete(room.roomCode);
+      const current = this.store.get(room.roomCode);
+      if (!current) return;
+      const stillEmpty = current.players.every((p) => !p.isConnected);
+      if (stillEmpty) {
+        this.shutdownRoom(room.roomCode);
+      }
+    }, this.emptyRoomTtlMs);
+    timer.unref?.();
+
+    this.shutdownTimers.set(room.roomCode, timer);
+  }
 
   private generateRoomCode(): string {
     for (let attempt = 0; attempt < 20; attempt++) {
@@ -59,6 +111,7 @@ export class RoomManager {
       updatedAt: now,
     };
     this.store.set(roomCode, room);
+    this.syncShutdownTimer(room);
     return room;
   }
 
@@ -221,6 +274,8 @@ export class RoomManager {
     const mod = this.registry.get(room.gameId);
     const existing = room.players.find((p) => p.id === playerId);
 
+    const wasOffline = Boolean(existing && !existing.isConnected);
+
     if (!existing) {
       if (room.status !== "LOBBY") {
         return { ok: false, error: "Game sedang berjalan, tunggu ronde selesai" };
@@ -246,8 +301,21 @@ export class RoomManager {
     }
 
     this.getRoomSockets(room.roomCode).set(playerId, sink);
+    this.syncShutdownTimer(room);
     room.updatedAt = Date.now();
     this.broadcastRoomState(room);
+
+    if (wasOffline) {
+      this.pushChatMessage(room, {
+        id: `sys_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        channel: room.status === "LOBBY" ? "lobby" : "public",
+        senderId: null,
+        senderName: "Sistem",
+        content: `${nickname} kembali online.`,
+        timestamp: Date.now(),
+        isSystem: true,
+      });
+    }
 
     // Send filtered chat history so reconnected players keep conversation context
     const allowedChannels: ChatChannel[] =
@@ -282,6 +350,7 @@ export class RoomManager {
     this.socketsByRoom.get(room.roomCode)?.delete(playerId);
 
     const player = room.players.find((p) => p.id === playerId);
+    const wasConnected = Boolean(player?.isConnected);
     if (player) {
       player.isConnected = false;
     }
@@ -298,6 +367,55 @@ export class RoomManager {
     }
 
     this.broadcastRoomState(room);
+    this.syncShutdownTimer(room);
+
+    if (player && wasConnected) {
+      this.pushChatMessage(room, {
+        id: `sys_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        channel: room.status === "LOBBY" ? "lobby" : "public",
+        senderId: null,
+        senderName: "Sistem",
+        content: `${player.nickname} sedang offline.`,
+        timestamp: Date.now(),
+        isSystem: true,
+      });
+    }
+  }
+
+  leaveRoom(roomCode: string, playerId: string): void {
+    const room = this.getRoom(roomCode);
+    if (!room) return;
+    this.socketsByRoom.get(room.roomCode)?.delete(playerId);
+
+    const player = room.players.find((p) => p.id === playerId);
+    if (!player) return;
+
+    if (room.status === "LOBBY") {
+      room.players = room.players.filter((p) => p.id !== playerId);
+      if (room.hostId === playerId) {
+        const nextHost = room.players.find((p) => p.isConnected) ?? room.players[0];
+        room.hostId = nextHost?.id ?? "";
+        room.players.forEach((p) => {
+          p.isHost = p.id === room.hostId;
+        });
+      }
+    } else {
+      player.isConnected = false;
+    }
+
+    room.updatedAt = Date.now();
+    this.broadcastRoomState(room);
+    this.syncShutdownTimer(room);
+
+    this.pushChatMessage(room, {
+      id: `sys_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      channel: room.status === "LOBBY" ? "lobby" : "public",
+      senderId: null,
+      senderName: "Sistem",
+      content: `${player.nickname} keluar dari room.`,
+      timestamp: Date.now(),
+      isSystem: true,
+    });
   }
 
   updateConfig(
@@ -338,6 +456,7 @@ export class RoomManager {
     sink?.send({ type: "ERROR", payload: { code: "KICKED", message: "Kamu dikeluarkan oleh Host" } });
     this.socketsByRoom.get(room.roomCode)?.delete(targetPlayerId);
     this.broadcastRoomState(room);
+    this.syncShutdownTimer(room);
     return null;
   }
 
@@ -356,6 +475,7 @@ export class RoomManager {
     const state = mod.init(room.players, config, {
       now: Date.now(),
       pickLibraryWordPair: pickLibraryWordPairFromDb,
+      libraryWords: getAllWordtrapWordsFromDb(),
       previousSessionData: room.sessionDataByGame[room.gameId],
     });
 

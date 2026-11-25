@@ -22,7 +22,7 @@ import {
   randomAvatar,
   saveGuestProfile,
 } from "../features/connection/profile";
-import { GAME_UI_CATALOG } from "../games/registry";
+import { GAME_UI_CATALOG, loadSelectedGameId, saveSelectedGameId } from "../games/registry";
 import { idLocale } from "../locales/id";
 
 interface HealthResponse {
@@ -40,7 +40,12 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
   const saved = loadGuestProfile();
   const [nickname, setNickname] = useState(saved?.nickname ?? "");
   const [avatar, setAvatar] = useState<AvatarId>(saved?.avatar ?? randomAvatar());
-  const [selectedGameId, setSelectedGameId] = useState("undercover");
+  const [selectedGameId, setSelectedGameId] = useState<string>(() => loadSelectedGameId());
+
+  const handleSelectGame = (gameId: string) => {
+    setSelectedGameId(gameId);
+    saveSelectedGameId(gameId);
+  };
   const [health, setHealth] = useState<HealthResponse | null>(null);
 
   const [creating, setCreating] = useState(false);
@@ -81,7 +86,8 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
         body: JSON.stringify({ gameId: selectedGameId }),
       });
       if (!res.ok) {
-        onNotify("Gagal membuat room. Pastikan server aktif.", "error");
+        const errData = (await res.json().catch(() => null)) as { message?: string } | null;
+        onNotify(errData?.message ?? "Gagal membuat room. Pastikan server aktif.", "error");
         return;
       }
       const data = (await res.json()) as { roomCode: string };
@@ -181,7 +187,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
                     key={game.id}
                     type="button"
                     disabled={disabled}
-                    onClick={() => setSelectedGameId(game.id)}
+                    onClick={() => handleSelectGame(game.id)}
                     className={[
                       "font-display flex flex-col items-center rounded-2xl border-2 px-2 py-2.5 text-center transition",
                       isSelected

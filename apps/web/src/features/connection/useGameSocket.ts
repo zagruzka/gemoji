@@ -14,10 +14,27 @@ export function useGameSocket(onMessage: (msg: ServerMessage) => void) {
   useEffect(() => {
     let active = true;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+    let pongTimeout: ReturnType<typeof setTimeout> | null = null;
     let attempt = 0;
+
+    const clearHeartbeat = () => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
+      if (pongTimeout) {
+        clearTimeout(pongTimeout);
+        pongTimeout = null;
+      }
+    };
 
     const connect = () => {
       if (!active) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) {
+        setStatus("disconnected");
+        return;
+      }
       setStatus("connecting");
 
       const token = localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -30,11 +47,35 @@ export function useGameSocket(onMessage: (msg: ServerMessage) => void) {
         if (!active) return;
         attempt = 0;
         setStatus("connected");
+        clearHeartbeat();
+        heartbeatTimer = setInterval(() => {
+          if (ws.readyState !== WebSocket.OPEN) return;
+          try {
+            ws.send(JSON.stringify({ type: "PING", payload: {} }));
+            if (pongTimeout) clearTimeout(pongTimeout);
+            pongTimeout = setTimeout(() => {
+              // Server did not respond to PING in time -> force reconnect
+              if (wsRef.current === ws) {
+                setStatus("disconnected");
+                ws.close();
+              }
+            }, 4000);
+          } catch {
+            ws.close();
+          }
+        }, 5000);
       };
 
       ws.onmessage = (event) => {
         try {
           const parsed = JSON.parse(String(event.data)) as ServerMessage;
+          if (parsed.type === "PONG") {
+            if (pongTimeout) {
+              clearTimeout(pongTimeout);
+              pongTimeout = null;
+            }
+            return;
+          }
           if (parsed.type === "SESSION_READY") {
             localStorage.setItem(TOKEN_STORAGE_KEY, parsed.payload.sessionToken);
           }
@@ -45,17 +86,47 @@ export function useGameSocket(onMessage: (msg: ServerMessage) => void) {
       };
 
       ws.onclose = () => {
+        clearHeartbeat();
         if (!active) return;
         setStatus("disconnected");
+        if (typeof navigator !== "undefined" && navigator.onLine === false) return;
         const delay = Math.min(5000, 600 * Math.pow(1.6, attempt++));
         reconnectTimer = setTimeout(connect, delay);
       };
     };
 
+    const handleOffline = () => {
+      clearHeartbeat();
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      setStatus("disconnected");
+      wsRef.current?.close();
+    };
+
+    const handleOnline = () => {
+      if (!active) return;
+      attempt = 0;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        connect();
+      }
+    };
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+
     connect();
 
     return () => {
       active = false;
+      clearHeartbeat();
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };

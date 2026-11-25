@@ -26,6 +26,7 @@ interface UndercoverBoardProps {
   view: UndercoverPlayerView;
   isHost: boolean;
   remainingSec: number | null;
+  onlineById?: Record<string, boolean>;
   onAction: (actionType: string, data: unknown) => void;
   onPlayAgain: () => void;
   onReturnLobby: () => void;
@@ -41,6 +42,7 @@ export function UndercoverBoard({
   view,
   isHost,
   remainingSec,
+  onlineById,
   onAction,
   onPlayAgain,
   onReturnLobby,
@@ -187,17 +189,20 @@ export function UndercoverBoard({
           <div className="flex flex-wrap justify-center gap-2">
             {view.players.map((p) => {
               const done = view.submittedCustomWordPlayerIds.includes(p.id);
+              const isOffline = onlineById?.[p.id] === false;
               return (
                 <div
                   key={p.id}
                   className={[
                     "inline-flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-extrabold",
-                    done
-                      ? "border-[#64cf36] bg-[#ebffd9] text-[#1d6321]"
-                      : "border-[#d8cfa3] bg-[#fffdf0] text-[#7a6d54]",
+                    isOffline
+                      ? "border-dashed border-[#e0326a] bg-[#fff0f5] text-[#9b1342] opacity-80"
+                      : done
+                        ? "border-[#64cf36] bg-[#ebffd9] text-[#1d6321]"
+                        : "border-[#d8cfa3] bg-[#fffdf0] text-[#7a6d54]",
                   ].join(" ")}
                 >
-                  <AvatarBadge avatar={p.avatar} size="sm" className="h-6 w-6 text-xs" />
+                  <AvatarBadge avatar={p.avatar} size="xs" offline={isOffline} />
                   <span>{p.nickname}</span>
                   {done && <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />}
                 </div>
@@ -293,19 +298,27 @@ export function UndercoverBoard({
 
           {/* Ready status chips */}
           <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-            {view.players.map((p) => (
-              <span
-                key={p.id}
-                className={[
-                  "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-extrabold",
-                  p.ready
-                    ? "border-[#5ac92e] bg-[#ebffd9] text-[#1c6622]"
-                    : "border-[#d8cfa3] bg-[#ebe4be] text-[#7a6d54]",
-                ].join(" ")}
-              >
-                {p.nickname} {p.ready ? "✓" : "..."}
-              </span>
-            ))}
+            {view.players.map((p) => {
+              const isOffline = onlineById?.[p.id] === false;
+              return (
+                <span
+                  key={p.id}
+                  className={[
+                    "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-extrabold",
+                    isOffline
+                      ? "border-dashed border-[#e0326a] bg-[#fff0f5] text-[#9b1342] opacity-80"
+                      : p.ready
+                        ? "border-[#5ac92e] bg-[#ebffd9] text-[#1c6622]"
+                        : "border-[#d8cfa3] bg-[#ebe4be] text-[#7a6d54]",
+                  ].join(" ")}
+                >
+                  <AvatarBadge avatar={p.avatar} size="xs" offline={isOffline} />
+                  <span>
+                    {p.nickname} {p.ready ? "✓" : "..."}
+                  </span>
+                </span>
+              );
+            })}
           </div>
         </GamePanel>
       </div>
@@ -349,6 +362,7 @@ export function UndercoverBoard({
             {view.turnOrder.map((pid, idx) => {
               const p = playerById.get(pid);
               if (!p) return null;
+              const isOffline = onlineById?.[pid] === false;
               const isCurrent = pid === view.currentTurnPlayerId;
               const hasClue = roundClues.some((c) => c.playerId === pid);
               return (
@@ -356,13 +370,16 @@ export function UndercoverBoard({
                   key={pid}
                   className={[
                     "inline-flex items-center gap-1.5 rounded-full border-2 px-2.5 py-1 text-xs font-extrabold transition",
-                    isCurrent
-                      ? "scale-105 border-[#e0326a] bg-[#ffe694] text-[#5c1632] shadow"
-                      : hasClue
-                        ? "border-[#64cf36] bg-[#ebffd9] text-[#1d6321]"
-                        : "border-[#d8cfa3] bg-[#fffdf0] text-[#7a6d54]",
+                    isOffline
+                      ? "border-dashed border-[#e0326a] bg-[#fff0f5] text-[#9b1342] opacity-80"
+                      : isCurrent
+                        ? "scale-105 border-[#e0326a] bg-[#ffe694] text-[#5c1632] shadow"
+                        : hasClue
+                          ? "border-[#64cf36] bg-[#ebffd9] text-[#1d6321]"
+                          : "border-[#d8cfa3] bg-[#fffdf0] text-[#7a6d54]",
                   ].join(" ")}
                 >
+                  <AvatarBadge avatar={p.avatar} size="xs" offline={isOffline} />
                   <span className="opacity-65">{idx + 1}.</span>
                   <span>{p.nickname}</span>
                   {hasClue && <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />}
@@ -480,9 +497,9 @@ export function UndercoverBoard({
     const skipVoters =
       isOpen && view.liveVotes
         ? Object.entries(view.liveVotes)
-            .filter(([, target]) => target === SKIP_VOTE_TARGET)
-            .map(([voterId]) => playerById.get(voterId))
-            .filter(Boolean)
+          .filter(([, target]) => target === SKIP_VOTE_TARGET)
+          .map(([voterId]) => playerById.get(voterId))
+          .filter(Boolean)
         : [];
 
     return (
@@ -562,10 +579,12 @@ export function UndercoverBoard({
               const votersForCandidate =
                 isOpen && view.liveVotes
                   ? Object.entries(view.liveVotes)
-                      .filter(([, target]) => target === p.id)
-                      .map(([voterId]) => playerById.get(voterId))
-                      .filter(Boolean)
+                    .filter(([, target]) => target === p.id)
+                    .map(([voterId]) => playerById.get(voterId))
+                    .filter(Boolean)
                   : [];
+
+              const isOffline = onlineById?.[p.id] === false;
 
               return (
                 <button
@@ -577,13 +596,15 @@ export function UndercoverBoard({
                     "flex w-full flex-col gap-2 rounded-2xl border-3 p-3 text-left transition",
                     isSelected
                       ? "border-[#e0326a] bg-[#ffe3ec] shadow-[0_4px_0_#e0326a]"
-                      : "border-[#d8cfa3] bg-[#fffdf0] hover:border-[#f0932b]",
+                      : isOffline
+                        ? "border-dashed border-[#e0326a] bg-[#fff0f5] opacity-80"
+                        : "border-[#d8cfa3] bg-[#fffdf0] hover:border-[#f0932b]",
                     !view.me.alive || isMe ? "cursor-default opacity-80" : "cursor-pointer",
                   ].join(" ")}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <AvatarBadge avatar={p.avatar} size="md" />
+                      <AvatarBadge avatar={p.avatar} size="md" offline={onlineById?.[p.id] === false} />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 text-base font-extrabold text-[#3d2940]">
                           <span className="truncate">{p.nickname}</span>
@@ -812,13 +833,19 @@ export function UndercoverBoard({
         <div className="mb-5 space-y-2">
           {view.players.map((p) => {
             const roleMeta = p.revealedRole ? ROLE_BADGE[p.revealedRole] : null;
+            const isOffline = onlineById?.[p.id] === false;
             return (
               <div
                 key={p.id}
-                className="flex items-center justify-between gap-2 rounded-2xl border-2 border-[#d8cfa3] bg-[#fffdf0] px-3 py-2"
+                className={[
+                  "flex items-center justify-between gap-2 rounded-2xl border-2 px-3 py-2",
+                  isOffline
+                    ? "border-dashed border-[#e0326a] bg-[#fff0f5] opacity-80"
+                    : "border-[#d8cfa3] bg-[#fffdf0]",
+                ].join(" ")}
               >
                 <div className="flex items-center gap-2.5">
-                  <AvatarBadge avatar={p.avatar} size="sm" dimmed={!p.alive} />
+                  <AvatarBadge avatar={p.avatar} size="sm" dimmed={!p.alive} offline={onlineById?.[p.id] === false} />
                   <div>
                     <div className="flex items-center gap-1.5 text-sm font-extrabold text-[#3d2940]">
                       <span>{p.nickname}</span>

@@ -1,14 +1,19 @@
-import { UndercoverConfigSchema, type UndercoverConfig } from "@gemoji/game-undercover";
+import { UndercoverConfigSchema } from "@gemoji/game-undercover";
+import { UnoConfigSchema } from "@gemoji/game-uno";
+import { WordtrapConfigSchema } from "@gemoji/game-wordtrap";
 import type { RoomPublicState } from "@gemoji/shared";
-import { CheckIcon, CopyIcon, CrownIcon, HelpCircleIcon, PlayIcon, UserXIcon, WifiIcon, WifiOffIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, CrownIcon, HelpCircleIcon, PlayIcon, UserXIcon } from "lucide-react";
 import { useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
+import { GAME_UI_CATALOG } from "../../games/registry";
 import { UndercoverSettings } from "../../games/undercover/UndercoverSettings";
+import { UnoSettings } from "../../games/uno/UnoSettings";
+import { WordtrapSettings } from "../../games/wordtrap/WordtrapSettings";
 
 interface LobbyViewProps {
   room: RoomPublicState;
   myPlayerId: string;
-  onUpdateConfig: (patch: Partial<UndercoverConfig>) => void;
+  onUpdateConfig: (patch: Record<string, unknown>) => void;
   onKickPlayer: (targetPlayerId: string) => void;
   onStartGame: () => void;
   onOpenRules: () => void;
@@ -26,8 +31,9 @@ export function LobbyView({
 }: LobbyViewProps) {
   const [copied, setCopied] = useState(false);
   const isHost = room.hostId === myPlayerId;
-  const parsedConfig = UndercoverConfigSchema.parse(room.config ?? {});
-  const minPlayers = 3;
+  const gameMeta = GAME_UI_CATALOG.find((g) => g.id === room.gameId);
+  const minPlayers = gameMeta?.minPlayers ?? 3;
+  const maxPlayers = gameMeta?.maxPlayers ?? 12;
   const canStart = room.players.length >= minPlayers;
 
   const shareUrl = `${window.location.origin}/room/${room.roomCode}`;
@@ -44,7 +50,7 @@ export function LobbyView({
 
   return (
     <div className="mx-auto w-full max-w-xl">
-      <GamePanel title='Lobby' ribbonColor="pink">
+      <GamePanel title={gameMeta ? `Lobby · ${gameMeta.name}` : "Lobby"} ribbonColor="pink">
         {/* Invite Link Strip */}
         <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl border-2 border-[#cfc595] bg-[#fffdf0] px-3.5 py-2.5">
           <div className="min-w-0">
@@ -67,7 +73,7 @@ export function LobbyView({
         <div className="mb-4">
           <div className="mb-2 flex items-center justify-between">
             <span className="font-display text-sm font-bold uppercase tracking-wide text-[#5c1632]">
-              Pemain ({room.players.length}/12)
+              Pemain ({room.players.length}/{maxPlayers})
             </span>
             <span className="text-xs font-extrabold text-[#786b51]">
               Minimal {minPlayers} pemain
@@ -81,14 +87,16 @@ export function LobbyView({
                 <div
                   key={p.id}
                   className={[
-                    "flex items-center justify-between gap-2 rounded-2xl border-2 px-3 py-2",
-                    isMe
-                      ? "border-[#e0326a] bg-[#fff9dc]"
-                      : "border-[#d8cfa3] bg-[#fffdf0]",
+                    "flex items-center justify-between gap-2 rounded-2xl border-2 px-3 py-2 transition",
+                    !p.isConnected
+                      ? "border-dashed border-[#e0326a] bg-[#fff0f5] opacity-80"
+                      : isMe
+                        ? "border-[#e0326a] bg-[#fff9dc]"
+                        : "border-[#d8cfa3] bg-[#fffdf0]",
                   ].join(" ")}
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <AvatarBadge avatar={p.avatar} size="sm" dimmed={!p.isConnected} />
+                    <AvatarBadge avatar={p.avatar} size="sm" offline={!p.isConnected} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1 truncate text-sm font-extrabold text-[#3d2940]">
                         <span className="truncate">{p.nickname}</span>
@@ -98,22 +106,11 @@ export function LobbyView({
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-[#7a6d54]">
-                        {p.isHost && (
-                          <span className="inline-flex items-center gap-0.5 text-[#d47a00]">
-                            <CrownIcon className="h-3 w-3 fill-current" /> Host
-                          </span>
-                        )}
-                        {p.isConnected ? (
-                          <span className="inline-flex items-center gap-0.5 text-[#2b8a3e]">
-                            <WifiIcon className="h-3 w-3" /> Online
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-0.5 text-[#c92a2a]">
-                            <WifiOffIcon className="h-3 w-3" /> Reconnecting
-                          </span>
-                        )}
-                      </div>
+                      {p.isHost && (
+                        <div className="flex items-center gap-1 text-[11px] font-bold text-[#d47a00]">
+                          <CrownIcon className="h-3 w-3 fill-current" /> Host
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -135,12 +132,26 @@ export function LobbyView({
 
         {/* Game Settings */}
         <div className="mb-2">
-          <UndercoverSettings
-            config={parsedConfig}
-            isHost={isHost}
-            playerCount={room.players.length}
-            onChange={onUpdateConfig}
-          />
+          {room.gameId === "wordtrap" ? (
+            <WordtrapSettings
+              config={WordtrapConfigSchema.parse(room.config ?? {})}
+              isHost={isHost}
+              onChange={(patch) => onUpdateConfig(patch)}
+            />
+          ) : room.gameId === "uno" ? (
+            <UnoSettings
+              config={UnoConfigSchema.parse(room.config ?? {})}
+              isHost={isHost}
+              onChange={(patch) => onUpdateConfig(patch)}
+            />
+          ) : (
+            <UndercoverSettings
+              config={UndercoverConfigSchema.parse(room.config ?? {})}
+              isHost={isHost}
+              playerCount={room.players.length}
+              onChange={(patch) => onUpdateConfig(patch)}
+            />
+          )}
         </div>
 
         {/* Footer Controls */}

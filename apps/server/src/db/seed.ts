@@ -1,4 +1,7 @@
-import { seedDefaultWordsIfEmpty } from "./index";
+import { seedDefaultWordsIfEmpty, seedWordtrapWordsIfEmpty } from "./index";
 
-const count = seedDefaultWordsIfEmpty();
-console.log(`[db:seed] word_pairs ready (${count} pasangan kata Bahasa Indonesia).`);
+const undercoverCount = seedDefaultWordsIfEmpty();
+const wordtrapCount = seedWordtrapWordsIfEmpty();
+console.log(
+  `[db:seed] word_pairs ready (${undercoverCount} pasangan kata), wordtrap_words ready (${wordtrapCount} kata).`,
+);

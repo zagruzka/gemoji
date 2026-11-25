@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { eq } from "drizzle-orm";
 import { DEFAULT_UNDERCOVER_WORDS } from "@gemoji/game-undercover/words";
+import { DEFAULT_WORDTRAP_WORDS } from "@gemoji/game-wordtrap/words";
 import * as schema from "./schema";
 
 const DEFAULT_DB_PATH = resolve(import.meta.dir, "../../gemoji.sqlite");
@@ -20,6 +21,14 @@ sqlite.exec(`
     language TEXT NOT NULL DEFAULT 'id',
     is_active INTEGER NOT NULL DEFAULT 1,
     UNIQUE(word_a, word_b, language)
+  );
+
+  CREATE TABLE IF NOT EXISTS wordtrap_words (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    word TEXT NOT NULL,
+    language TEXT NOT NULL DEFAULT 'id',
+    is_active INTEGER NOT NULL DEFAULT 1,
+    UNIQUE(word, language)
   );
 
   CREATE TABLE IF NOT EXISTS match_logs (
@@ -65,4 +74,35 @@ export function pickLibraryWordPairFromDb(usedKeys: Set<string>): { wordA: strin
   const source = unused.length > 0 ? unused : rows;
   const idx = Math.floor(Math.random() * source.length);
   return source[idx] ?? null;
+}
+
+export function seedWordtrapWordsIfEmpty(): number {
+  const existing = sqlite.query("SELECT COUNT(*) as count FROM wordtrap_words").get() as {
+    count: number;
+  };
+  if (existing.count > 0) return existing.count;
+
+  const insert = sqlite.prepare(
+    "INSERT OR IGNORE INTO wordtrap_words (word, language, is_active) VALUES (?, 'id', 1)",
+  );
+  const tx = sqlite.transaction(() => {
+    for (const word of DEFAULT_WORDTRAP_WORDS) {
+      insert.run(word);
+    }
+  });
+  tx();
+
+  const after = sqlite.query("SELECT COUNT(*) as count FROM wordtrap_words").get() as {
+    count: number;
+  };
+  return after.count;
+}
+
+export function getAllWordtrapWordsFromDb(): string[] {
+  const rows = db
+    .select({ word: schema.wordtrapWords.word })
+    .from(schema.wordtrapWords)
+    .where(eq(schema.wordtrapWords.isActive, true))
+    .all();
+  return rows.map((r) => r.word);
 }

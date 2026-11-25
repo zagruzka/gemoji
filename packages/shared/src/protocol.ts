@@ -33,6 +33,10 @@ export const ClientMessageSchema = z.discriminatedUnion("type", [
     payload: z.object({}).default({}),
   }),
   z.object({
+    type: z.literal("ROOM_LEAVE"),
+    payload: z.object({}).default({}),
+  }),
+  z.object({
     type: z.literal("GAME_ACTION"),
     payload: z.object({
       actionType: z.string(),

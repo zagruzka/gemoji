@@ -12,6 +12,8 @@
   "dependencies": {
     "@gemoji/game-core": "workspace:*",
     "@gemoji/game-undercover": "workspace:*",
+    "@gemoji/game-uno": "workspace:*",
+    "@gemoji/game-wordtrap": "workspace:*",
     "@gemoji/shared": "workspace:*",
     "lucide-react": "^1.79.0",
     "motion": "^14.14.0",

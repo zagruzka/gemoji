@@ -8,6 +8,13 @@ export const wordPairs = sqliteTable("word_pairs", {
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
 });
 
+export const wordtrapWords = sqliteTable("wordtrap_words", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  word: text("word").notNull(),
+  language: text("language").notNull().default("id"),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+});
+
 export const matchLogs = sqliteTable("match_logs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   gameId: text("game_id").notNull(),

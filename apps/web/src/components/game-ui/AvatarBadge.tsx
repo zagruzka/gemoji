@@ -1,4 +1,5 @@
 import { AVATAR_IDS, type AvatarId } from "@gemoji/shared";
+import { WifiOffIcon } from "lucide-react";
 
 interface AvatarMeta {
   emoji: string;
@@ -23,27 +24,43 @@ export const AVATAR_MAP: Record<AvatarId, AvatarMeta> = {
 
 interface AvatarBadgeProps {
   avatar: AvatarId;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   dimmed?: boolean;
+  offline?: boolean;
   className?: string;
 }
 
 const SIZE_MAP = {
+  xs: "h-6 w-6 text-xs",
   sm: "h-8 w-8 text-base",
   md: "h-11 w-11 text-xl",
   lg: "h-14 w-14 text-3xl",
 };
 
-export function AvatarBadge({ avatar, size = "md", dimmed = false, className = "" }: AvatarBadgeProps) {
+const OFFLINE_ICON_SIZE = {
+  xs: "h-3.5 w-3.5",
+  sm: "h-5 w-5",
+  md: "h-6 w-6",
+  lg: "h-8 w-8",
+};
+
+export function AvatarBadge({
+  avatar,
+  size = "md",
+  dimmed = false,
+  offline = false,
+  className = "",
+}: AvatarBadgeProps) {
   const meta = AVATAR_MAP[avatar] ?? AVATAR_MAP.fox;
   return (
     <span
-      title={meta.label}
+      title={offline ? `${meta.label} (Offline)` : meta.label}
       className={[
-        "relative inline-flex shrink-0 select-none items-center justify-center rounded-full border-2 border-white bg-gradient-to-b shadow-[0_3px_0_rgba(40,35,55,0.28)]",
+        "relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden rounded-full border-2 bg-gradient-to-b shadow-[0_3px_0_rgba(40,35,55,0.28)]",
+        offline ? "border-[#e0326a]" : "border-white",
         meta.bg,
         SIZE_MAP[size],
-        dimmed ? "grayscale opacity-60" : "",
+        dimmed && !offline ? "grayscale opacity-60" : "",
         className,
       ].join(" ")}
     >
@@ -51,7 +68,24 @@ export function AvatarBadge({ avatar, size = "md", dimmed = false, className = "
         aria-hidden="true"
         className="pointer-events-none absolute top-0.5 h-1.5 w-1/2 rounded-full bg-white/40"
       />
-      <span className="relative z-10 leading-none">{meta.emoji}</span>
+      <span
+        className={[
+          "relative z-10 leading-none",
+          offline ? "grayscale opacity-25" : "",
+        ].join(" ")}
+      >
+        {meta.emoji}
+      </span>
+      {offline && (
+        <span
+          aria-label="Offline"
+          className="absolute inset-0 z-20 flex items-center justify-center bg-[#b81447]/80 text-white"
+        >
+          <WifiOffIcon
+            className={`${OFFLINE_ICON_SIZE[size]} stroke-[3] drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.65)]`}
+          />
+        </span>
+      )}
     </span>
   );
 }

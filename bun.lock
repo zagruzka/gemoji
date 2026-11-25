@@ -16,6 +16,8 @@
         "@elysiajs/cors": "^1.4.3",
         "@gemoji/game-core": "workspace:*",
         "@gemoji/game-undercover": "workspace:*",
+        "@gemoji/game-uno": "workspace:*",
+        "@gemoji/game-wordtrap": "workspace:*",
         "@gemoji/shared": "workspace:*",
         "drizzle-orm": "^0.45.4",
         "elysia": "^1.4.32",
@@ -28,6 +30,8 @@
       "dependencies": {
         "@gemoji/game-core": "workspace:*",
         "@gemoji/game-undercover": "workspace:*",
+        "@gemoji/game-uno": "workspace:*",
+        "@gemoji/game-wordtrap": "workspace:*",
         "@gemoji/shared": "workspace:*",
         "lucide-react": "^1.79.0",
         "motion": "^14.14.0",
@@ -59,6 +63,24 @@
         "zod": "^3.24.2",
       },
     },
+    "packages/games/uno": {
+      "name": "@gemoji/game-uno",
+      "version": "0.1.0",
+      "dependencies": {
+        "@gemoji/game-core": "workspace:*",
+        "@gemoji/shared": "workspace:*",
+        "zod": "^3.24.2",
+      },
+    },
+    "packages/games/wordtrap": {
+      "name": "@gemoji/game-wordtrap",
+      "version": "0.1.0",
+      "dependencies": {
+        "@gemoji/game-core": "workspace:*",
+        "@gemoji/shared": "workspace:*",
+        "zod": "^3.24.2",
+      },
+    },
     "packages/shared": {
       "name": "@gemoji/shared",
       "version": "0.1.0",
@@ -81,6 +103,10 @@
     "@gemoji/game-core": ["@gemoji/game-core@workspace:packages/game-core"],
 
     "@gemoji/game-undercover": ["@gemoji/game-undercover@workspace:packages/games/undercover"],
+
+    "@gemoji/game-uno": ["@gemoji/game-uno@workspace:packages/games/uno"],
+
+    "@gemoji/game-wordtrap": ["@gemoji/game-wordtrap@workspace:packages/games/wordtrap"],
 
     "@gemoji/server": ["@gemoji/server@workspace:apps/server"],
 

@@ -7,4 +7,3 @@ build/
 *.sqlite-shm
 *.sqlite-wal
 .DS_Store
-.prd.md

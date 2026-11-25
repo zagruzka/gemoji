@@ -134,7 +134,7 @@ export function UndercoverSettings({
         <p className="mt-1 text-[11px] font-bold text-[#786b51]">
           {config.wordMode === "custom"
             ? "Tiap pemain menulis 1 pasang kata, lalu diacak sampai semua terpakai."
-            : "Server memilih pasangan kata secara acak dari koleksi 110+ kata."}
+            : "Server memilih pasangan kata secara acak dari koleksi di database."}
         </p>
       </div>
 
