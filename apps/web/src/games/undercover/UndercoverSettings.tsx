@@ -1,5 +1,5 @@
 import type { UndercoverConfig } from "@gemoji/game-undercover";
-import { BookOpen, Check, Clock, Eye, EyeOff, Minus, PenLine, Plus } from "lucide-react";
+import { BookOpenIcon, CheckIcon, ClockIcon, EyeIcon, EyeOffIcon, InfinityIcon, MinusIcon, PenLineIcon, PlusIcon } from "lucide-react";
 
 interface UndercoverSettingsProps {
   config: UndercoverConfig;
@@ -9,17 +9,17 @@ interface UndercoverSettingsProps {
 }
 
 const VOTE_DURATIONS: Array<{ value: UndercoverConfig["voteDuration"]; label: string }> = [
-  { value: "unlimited", label: "Unlimited" },
-  { value: 30, label: "30d" },
-  { value: 60, label: "60d" },
-  { value: 120, label: "120d" },
+  { value: 0, label: "unlimited" },
+  { value: 30, label: "30s" },
+  { value: 60, label: "60s" },
+  { value: 120, label: "120s" },
 ];
 
 const CLUE_DURATIONS: Array<{ value: UndercoverConfig["clueDurationSec"]; label: string }> = [
   { value: 0, label: "Skip" },
-  { value: 30, label: "30d" },
-  { value: 45, label: "45d" },
-  { value: 60, label: "60d" },
+  { value: 30, label: "30s" },
+  { value: 45, label: "45s" },
+  { value: 60, label: "60s" },
 ];
 
 export function UndercoverSettings({
@@ -96,7 +96,7 @@ export function UndercoverSettings({
     ].join(" ");
 
   return (
-    <div className="space-y-3.5 rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-3.5">
+    <div className="space-y-3 rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-2">
       <div className="flex items-center justify-between">
         <span className="font-display text-sm font-bold uppercase tracking-wide text-[#5c1632]">
           Pengaturan Undercover
@@ -110,7 +110,7 @@ export function UndercoverSettings({
 
       {/* Mode Kata */}
       <div>
-        <div className="mb-1.5 text-xs font-extrabold text-[#6e6049]">Mode Kata (Acak Tanpa Kategori)</div>
+        <div className="mb-1.5 text-xs font-extrabold text-[#6e6049]">Mode Kata</div>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -118,7 +118,7 @@ export function UndercoverSettings({
             onClick={() => onChange({ wordMode: "library" })}
             className={`${pillBtn(config.wordMode === "library")} flex items-center justify-center gap-1.5 py-2`}
           >
-            <BookOpen className="h-4 w-4" />
+            <BookOpenIcon className="h-4 w-4" />
             Library
           </button>
           <button
@@ -127,7 +127,7 @@ export function UndercoverSettings({
             onClick={() => onChange({ wordMode: "custom" })}
             className={`${pillBtn(config.wordMode === "custom")} flex items-center justify-center gap-1.5 py-2`}
           >
-            <PenLine className="h-4 w-4" />
+            <PenLineIcon className="h-4 w-4" />
             Custom Word
           </button>
         </div>
@@ -146,27 +146,27 @@ export function UndercoverSettings({
             {playerCount < 3 ? `Estimasi ${effectivePlayers} pemain` : `${playerCount} pemain`}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1">
           {/* Citizen (Auto) */}
-          <div className="flex flex-col justify-between rounded-xl border-2 border-[#78d465] bg-[#f4ffe8] p-2.5 text-center">
+          <div className="flex flex-col justify-between rounded-xl border-2 border-[#d8cfa3] bg-[#fffdf0] p-2.5 text-center">
             <div className="text-[11px] font-extrabold text-[#1a662b]">Citizen</div>
             <div className="font-display my-1 text-2xl font-bold text-[#144a1f]">
               {citizenCount}
             </div>
-            <div className="text-[10px] font-extrabold text-[#3c8749]">Otomatis</div>
+            <div className="text-[10px] font-extrabold text-[#3c8749]">Kata Umum</div>
           </div>
 
           {/* Undercover */}
           <div className="flex flex-col justify-between rounded-xl border-2 border-[#d8cfa3] bg-[#fffdf0] p-2.5">
             <div className="text-center text-[11px] font-extrabold text-[#c72258]">Undercover</div>
-            <div className="mt-1.5 flex items-center justify-between">
+            <div className="mt-1.5 -mx-1 sm:mx-0 flex items-center justify-between">
               <button
                 type="button"
                 disabled={!isHost || config.undercoverCount <= 0}
                 onClick={handleDecUndercover}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border-2 border-[#d8cfa3] bg-[#ebe4be] text-[#4e3e4d] disabled:opacity-40"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <MinusIcon className="h-3.5 w-3.5" />
               </button>
               <span className="font-display text-xl font-bold text-[#3d2940]">
                 {previewUndercover}
@@ -181,25 +181,25 @@ export function UndercoverSettings({
                 onClick={handleIncUndercover}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border-2 border-[#d8cfa3] bg-[#ebe4be] text-[#4e3e4d] disabled:opacity-40"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <PlusIcon className="h-3.5 w-3.5" />
               </button>
             </div>
             <div className="mt-1 text-center text-[10px] font-bold text-[#8a7d63]">
-              {previewUndercover === 0 ? "Tanpa Undercover" : "Kata mirip"}
+              Kata Mirip
             </div>
           </div>
 
           {/* Mr. Blank */}
           <div className="flex flex-col justify-between rounded-xl border-2 border-[#d8cfa3] bg-[#fffdf0] p-2.5">
             <div className="text-center text-[11px] font-extrabold text-[#6540bb]">Mr. Blank</div>
-            <div className="mt-1.5 flex items-center justify-between">
+            <div className="mt-1.5 -mx-1 sm:mx-0 flex items-center justify-between">
               <button
                 type="button"
                 disabled={!isHost || config.mrBlankCount <= 0}
                 onClick={handleDecMrBlank}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border-2 border-[#d8cfa3] bg-[#ebe4be] text-[#4e3e4d] disabled:opacity-40"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <MinusIcon className="h-3.5 w-3.5" />
               </button>
               <span className="font-display text-xl font-bold text-[#3d2940]">
                 {previewMrBlank}
@@ -214,12 +214,10 @@ export function UndercoverSettings({
                 onClick={handleIncMrBlank}
                 className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border-2 border-[#d8cfa3] bg-[#ebe4be] text-[#4e3e4d] disabled:opacity-40"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <PlusIcon className="h-3.5 w-3.5" />
               </button>
             </div>
-            <div className="mt-1 text-center text-[10px] font-bold text-[#8a7d63]">
-              {previewMrBlank === 0 ? "Nonaktif" : "Tanpa kata"}
-            </div>
+            <div className="mt-1 text-center text-[10px] font-bold text-[#8a7d63]">Tanpa Kata</div>
           </div>
         </div>
       </div>
@@ -238,7 +236,7 @@ export function UndercoverSettings({
               onClick={() => onChange({ voteDuration: opt.value })}
               className={pillBtn(config.voteDuration === opt.value)}
             >
-              {opt.label}
+              {opt.value === 0 ? <InfinityIcon className="size-4 mx-auto" /> : opt.label}
             </button>
           ))}
         </div>
@@ -254,7 +252,7 @@ export function UndercoverSettings({
             onClick={() => onChange({ voteMode: "open" })}
             className={`${pillBtn(config.voteMode === "open")} flex items-center justify-center gap-1.5 py-2`}
           >
-            <Eye className="h-4 w-4" />
+            <EyeIcon className="h-4 w-4" />
             Terbuka
           </button>
           <button
@@ -263,7 +261,7 @@ export function UndercoverSettings({
             onClick={() => onChange({ voteMode: "secret" })}
             className={`${pillBtn(config.voteMode === "secret")} flex items-center justify-center gap-1.5 py-2`}
           >
-            <EyeOff className="h-4 w-4" />
+            <EyeOffIcon className="h-4 w-4" />
             Rahasia
           </button>
         </div>
@@ -318,12 +316,12 @@ export function UndercoverSettings({
               : "border-[#c8bf94] bg-[#ebe4be] text-transparent",
           ].join(" ")}
         >
-          <Check className="h-4 w-4 stroke-[3.5]" />
+          <CheckIcon className="h-4 w-4 stroke-[3.5]" />
         </span>
         <div className="min-w-0">
           <div className="font-display text-sm font-bold text-[#3d2940]">Blind Role</div>
           <div className="text-[11px] font-bold text-[#786b51]">
-            Citizen &amp; Undercover hanya melihat kata, tidak tahu role-nya di awal.
+            Citizen &amp; Undercover tidak tahu role-nya di awal.
           </div>
         </div>
       </label>

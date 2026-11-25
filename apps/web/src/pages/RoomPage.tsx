@@ -7,12 +7,13 @@ import type {
   ServerMessage,
 } from "@gemoji/shared";
 import {
-  ArrowLeft,
-  Clock,
-  MessageCircle,
-  Users,
-  Wifi,
-  WifiOff,
+  ArrowLeftIcon,
+  BookOpenIcon,
+  ClockIcon,
+  MessageCircleIcon,
+  UsersIcon,
+  WifiIcon,
+  WifiOffIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -60,6 +61,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [chatBubble, setChatBubble] = useState<ChatMessage | null>(null);
   const [roomMissing, setRoomMissing] = useState(false);
+  const [wordsLoaded, setWordsLoaded] = useState<number | null>(null);
 
   const chatOpenRef = useRef(chatOpen);
   chatOpenRef.current = chatOpen;
@@ -79,6 +81,19 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
         // Let WebSocket handle reconnect errors
       });
   }, [roomCode]);
+
+  // Fetch Undercover word library count when inside an Undercover room
+  useEffect(() => {
+    if (room?.gameId !== "undercover" || wordsLoaded !== null) return;
+    fetch("/api/health")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { wordsLoaded?: number } | null) => {
+        if (typeof data?.wordsLoaded === "number") {
+          setWordsLoaded(data.wordsLoaded);
+        }
+      })
+      .catch(() => {});
+  }, [room?.gameId, wordsLoaded]);
 
   const handleServerMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
@@ -230,7 +245,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
             Kode room <strong>{roomCode}</strong> tidak ditemukan atau sudah ditutup.
           </p>
           <GameButton variant="yellow" size="md" fullWidth onClick={onExitHome}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeftIcon className="h-5 w-5" />
             Kembali ke Beranda
           </GameButton>
         </GamePanel>
@@ -283,25 +298,34 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
   const isHost = Boolean(room && myPlayerId && room.hostId === myPlayerId);
 
   return (
-    <div className="relative flex min-h-dvh flex-col px-3 py-4 sm:px-4 sm:py-6">
+    <div className="relative flex min-h-dvh flex-col px-2 py-4 sm:px-4 sm:py-6">
       <LowPolyBackground theme="arcade" />
 
       {/* Persistent Top HUD Bar */}
-      <header className="relative mx-auto mb-5 flex w-full max-w-2xl flex-wrap items-center justify-between gap-2">
+      <header className="relative mx-auto mb-4 flex w-full max-w-2xl flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {room && (
             <HudPill
               accent="cyan"
-              icon={<Users className="h-4 w-4" />}
+              icon={<UsersIcon className="h-4 w-4" />}
               label="Pemain"
               value={`${room.players.length}/12`}
+            />
+          )}
+
+          {room?.gameId === "undercover" && (
+            <HudPill
+              accent="gold"
+              icon={<BookOpenIcon className="h-4 w-4" />}
+              label="Library"
+              value={wordsLoaded !== null ? `${wordsLoaded} kata` : "110 kata"}
             />
           )}
 
           {room?.status === "PLAYING" && (
             <HudPill
               accent={remainingSec !== null && remainingSec <= 10 ? "pink" : "green"}
-              icon={<Clock className="h-4 w-4" />}
+              icon={<ClockIcon className="h-4 w-4" />}
               label="Waktu"
               value={remainingSec === null ? "∞" : `${remainingSec}d`}
             />
@@ -314,9 +338,9 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
             title={wsStatus === "connected" ? "Terhubung" : "Menyambung ulang..."}
           >
             {wsStatus === "connected" ? (
-              <Wifi className="h-5 w-5" />
+              <WifiIcon className="h-5 w-5" />
             ) : (
-              <WifiOff className="h-5 w-5" />
+              <WifiOffIcon className="h-5 w-5" />
             )}
           </IconButton>
 
@@ -330,7 +354,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
               setChatBubble(null);
             }}
           >
-            <MessageCircle className="h-5 w-5" />
+            <MessageCircleIcon className="h-5 w-5" />
           </IconButton>
 
           {/* Floating Incoming Chat Bubble (Top-Right) */}

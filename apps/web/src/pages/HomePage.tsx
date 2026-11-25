@@ -1,11 +1,9 @@
 import type { AvatarId } from "@gemoji/shared";
 import {
-  BookOpen,
-  Gamepad2,
-  HelpCircle,
-  Play,
-  Sparkles,
-  Users,
+  HelpCircleIcon,
+  PlayIcon,
+  SparklesIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -116,7 +114,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
   };
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-between px-4 py-5 sm:py-8">
+    <div className="relative flex min-h-dvh flex-col items-center justify-between px-2 py-4 sm:py-8">
       <LowPolyBackground theme="arcade" />
 
       {/* Top HUD Bar */}
@@ -124,25 +122,19 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
         <div className="flex flex-wrap items-center gap-2">
           <HudPill
             accent={health?.ok ? "green" : "pink"}
-            icon={<Sparkles className="h-4 w-4" />}
+            icon={<SparklesIcon className="size-4" />}
             label="Status"
             value={health?.ok ? idLocale.status.online : idLocale.status.offline}
           />
-          <HudPill
-            accent="gold"
-            icon={<BookOpen className="h-4 w-4" />}
-            label="Library"
-            value={health ? `${health.wordsLoaded} kata` : "110 kata"}
-          />
         </div>
 
-        <IconButton tone="gold" title="Aturan Main" onClick={() => setShowRulesModal(true)}>
-          <HelpCircle className="h-5 w-5" />
+        <IconButton tone="gold" title="Aturan Main Gemoji" onClick={() => setShowRulesModal(true)}>
+          <HelpCircleIcon className="size-5" />
         </IconButton>
       </header>
 
       {/* Main Panel */}
-      <main className="my-5 w-full max-w-md">
+      <main className="my-2 w-full max-w-md">
         <GamePanel title={idLocale.appName} ribbonColor="pink">
           <p className="mb-4 text-center text-sm font-bold text-[#6e6049]">
             {idLocale.tagline}
@@ -196,10 +188,10 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
                       disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer",
                     ].join(" ")}
                   >
-                    <Gamepad2 className="mb-1 h-5 w-5" />
+                    <game.icon className="size-5 mb-1" />
                     <span className="text-sm font-bold leading-tight">{game.name}</span>
                     <span className="mt-0.5 text-[10px] font-semibold">
-                      {disabled ? "Segera" : `${game.minPlayers}–${game.maxPlayers} org`}
+                      {disabled ? "Coming Soon" : `${game.minPlayers}–${game.maxPlayers} players`}
                     </span>
                   </button>
                 );
@@ -216,7 +208,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
               disabled={creating}
               onClick={handleCreateRoom}
             >
-              <Play className="h-6 w-6 fill-current" />
+              <PlayIcon className="h-6 w-6 fill-current" />
               {creating ? "Membuat Room..." : idLocale.actions.createRoom}
             </GameButton>
 
@@ -228,7 +220,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
                 if (ensureProfile()) setShowJoinModal(true);
               }}
             >
-              <Users className="h-5 w-5" />
+              <UsersIcon className="h-5 w-5" />
               {idLocale.actions.joinRoom}
             </GameButton>
 
@@ -238,7 +230,7 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
               fullWidth
               onClick={() => setShowRulesModal(true)}
             >
-              <HelpCircle className="h-5 w-5" />
+              <HelpCircleIcon className="h-5 w-5" />
               {idLocale.actions.rules}
             </GameButton>
           </div>
@@ -299,34 +291,37 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
       {showRulesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]">
           <GamePanel
-            title="Aturan Undercover"
+            title="Aturan Main Gemoji"
             ribbonColor="pink"
             onClose={() => setShowRulesModal(false)}
             className="w-full max-w-md"
           >
             <div className="max-h-[65dvh] space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
               <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
-                <div className="font-display text-base text-[#1b6d34]">1. Citizen</div>
-                <p>Mendapat kata utama yang sama. Cari & eliminasi semua Undercover dan Mr. Blank!</p>
-              </div>
-              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
-                <div className="font-display text-base text-[#c72258]">2. Undercover</div>
-                <p>Mendapat kata yang mirip tapi berbeda. Berbaurlah dan bertahan hidup sampai akhir!</p>
-              </div>
-              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
-                <div className="font-display text-base text-[#6540bb]">3. Mr. Blank</div>
+                <div className="font-display text-base text-[#1b6d34]">1. Siapkan Profil &amp; Pilih Game</div>
                 <p>
-                  Tidak mendapat kata sama sekali! Jika tereliminasi, Mr. Blank punya 1 kesempatan
-                  menebak kata Citizen untuk <strong>langsung menang</strong>.
+                  Isi nickname dan pilih avatarmu tanpa perlu akun. Pilih game yang ingin dimainkan,
+                  lalu buat room baru atau gabung memakai kode room dari teman.
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#c72258]">2. Kumpul di Lobby</div>
+                <p>
+                  Bagikan kode atau link room ke teman-temanmu. Host dapat mengatur aturan dan
+                  pengaturan game di lobby sebelum menekan <strong>Mulai Game!</strong>
+                </p>
+              </div>
+              <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+                <div className="font-display text-base text-[#6540bb]">3. Main Bareng Real-Time</div>
+                <p>
+                  Semua giliran, timer, dan obrolan berjalan langsung di browser. Jika koneksi
+                  sempat terputus, kamu akan tersambung kembali otomatis selama room masih aktif.
                 </p>
               </div>
               <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-3 text-xs leading-relaxed">
-                <strong>Mode Kata:</strong> Host bisa memilih <em>Library (Acak)</em> atau{" "}
-                <em>Custom Word</em> (tiap pemain menyumbang 1 pasang kata, diacak sampai habis
-                baru input ulang). Host juga bisa mengatur <strong>Timer Clue</strong>{" "}
-                (termasuk <em>Skip</em> untuk main tatap muka), <strong>Waktu Vote</strong>{" "}
-                (Unlimited / 30s / 60s / 120s), dan <strong>Mode Vote</strong> (Terbuka / Rahasia,
-                bisa Skip).
+                <strong>Etika Bermain:</strong> Main dengan sportif, jangan mengintip layar teman
+                saat bermain tatap muka, dan gunakan obrolan room dengan sopan. Pengaturan spesifik
+                tiap game bisa diatur Host langsung di Lobby.
               </div>
             </div>
           </GamePanel>

@@ -54,7 +54,7 @@ describe("RoomManager integration (Lobby + Chat + Undercover)", () => {
       manager.updateConfig(room.roomCode, "p1", {
         config: {
           wordMode: "custom",
-          voteDuration: "unlimited",
+          voteDuration: 0,
           voteMode: "open",
           undercoverCount: 1,
           mrBlankCount: 0,

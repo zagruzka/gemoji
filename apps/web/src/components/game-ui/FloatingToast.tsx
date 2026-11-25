@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
+import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon, XIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 export type ToastTone = "error" | "success" | "info";
@@ -76,9 +76,9 @@ export function FloatingToastStack({ toasts, onDismiss }: FloatingToastProps) {
                   style.iconBg,
                 ].join(" ")}
               >
-                {toast.tone === "error" && <AlertTriangle className="h-4 w-4 stroke-[2.5]" />}
-                {toast.tone === "success" && <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />}
-                {toast.tone === "info" && <Info className="h-4 w-4 stroke-[2.5]" />}
+                {toast.tone === "error" && <AlertTriangleIcon className="h-4 w-4 stroke-[2.5]" />}
+                {toast.tone === "success" && <CheckCircle2Icon className="h-4 w-4 stroke-[2.5]" />}
+                {toast.tone === "info" && <InfoIcon className="h-4 w-4 stroke-[2.5]" />}
               </span>
 
               <span className="flex-1 text-sm font-extrabold leading-snug">{toast.message}</span>
@@ -89,7 +89,7 @@ export function FloatingToastStack({ toasts, onDismiss }: FloatingToastProps) {
                 aria-label="Tutup notifikasi"
                 className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black/10 transition hover:bg-black/15 active:scale-95"
               >
-                <X className="h-4 w-4 stroke-[2.75]" />
+                <XIcon className="h-4 w-4 stroke-[2.75]" />
               </button>
             </motion.div>
           );

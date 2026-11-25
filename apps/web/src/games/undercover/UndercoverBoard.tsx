@@ -4,20 +4,20 @@ import {
   type UndercoverRole,
 } from "@gemoji/game-undercover";
 import {
-  Check,
-  Clock,
-  Eye,
-  EyeOff,
-  MessageSquareText,
-  PenLine,
-  Play,
-  RotateCcw,
-  Send,
-  SkipForward,
-  Skull,
-  Sparkles,
-  Trophy,
-  Vote,
+  CheckIcon,
+  ClockIcon,
+  EyeIcon,
+  EyeOffIcon,
+  MessageSquareTextIcon,
+  PenLineIcon,
+  PlayIcon,
+  RotateCcwIcon,
+  SendIcon,
+  SkipForwardIcon,
+  SkullIcon,
+  SparklesIcon,
+  TrophyIcon,
+  VoteIcon,
 } from "lucide-react";
 import { useState, type MouseEvent, type PointerEvent } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
@@ -144,7 +144,7 @@ export function UndercoverBoard({
             <div className="mb-4 space-y-3">
               <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] p-3.5">
                 <div className="mb-2 flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#5c1632]">
-                  <PenLine className="h-3.5 w-3.5" /> Pasangan Kata Mirip
+                  <PenLineIcon className="h-3.5 w-3.5" /> Pasangan Kata Mirip
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -177,7 +177,7 @@ export function UndercoverBoard({
               )}
 
               <GameButton variant="yellow" size="md" fullWidth onClick={handleSubmitCustomWords}>
-                <Send className="h-5 w-5" />
+                <SendIcon className="h-5 w-5" />
                 Kirim Pasangan Kata!
               </GameButton>
             </div>
@@ -199,7 +199,7 @@ export function UndercoverBoard({
                 >
                   <AvatarBadge avatar={p.avatar} size="sm" className="h-6 w-6 text-xs" />
                   <span>{p.nickname}</span>
-                  {done && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                  {done && <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />}
                 </div>
               );
             })}
@@ -237,7 +237,7 @@ export function UndercoverBoard({
           >
             {!peekWord ? (
               <>
-                <Eye className="mb-2 h-10 w-10" />
+                <EyeIcon className="mb-2 h-10 w-10" />
                 <div className="font-display text-2xl font-bold">Tahan untuk Intip Kata</div>
                 <p className="mt-1 text-xs font-bold text-white/85">
                   Pastikan layar tidak terlihat oleh teman di sebelahmu!
@@ -274,7 +274,7 @@ export function UndercoverBoard({
                 )}
 
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-extrabold text-[#9e8e70]">
-                  <EyeOff className="h-3.5 w-3.5" /> Lepaskan untuk sembunyikan
+                  <EyeOffIcon className="h-3.5 w-3.5" /> Lepaskan untuk sembunyikan
                 </span>
               </>
             )}
@@ -287,7 +287,7 @@ export function UndercoverBoard({
             disabled={view.me.ready}
             onClick={() => onAction("MARK_READY", {})}
           >
-            <Check className="h-6 w-6 stroke-[3]" />
+            <CheckIcon className="h-6 w-6 stroke-[3]" />
             {view.me.ready ? `Menunggu (${readyCount}/${view.players.length})` : "Saya Siap!"}
           </GameButton>
 
@@ -339,7 +339,7 @@ export function UndercoverBoard({
               {...holdPeekHandlers}
               className="font-display inline-flex cursor-pointer select-none touch-none items-center gap-1 rounded-xl bg-[#fffdf0] px-2.5 py-1 text-xs font-bold text-[#5c1632] shadow-sm"
             >
-              {peekWord ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              {peekWord ? <EyeOffIcon className="h-3.5 w-3.5" /> : <EyeIcon className="h-3.5 w-3.5" />}
               Tahan Intip
             </button>
           </div>
@@ -365,7 +365,7 @@ export function UndercoverBoard({
                 >
                   <span className="opacity-65">{idx + 1}.</span>
                   <span>{p.nickname}</span>
-                  {hasClue && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                  {hasClue && <CheckIcon className="h-3.5 w-3.5 stroke-[3]" />}
                 </div>
               );
             })}
@@ -378,7 +378,7 @@ export function UndercoverBoard({
                 <span>Giliranmu Memberi Clue!</span>
                 {remainingSec !== null && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-[#e0326a] px-2.5 py-0.5 text-xs text-white">
-                    <Clock className="h-3.5 w-3.5" /> {remainingSec}d
+                    <ClockIcon className="h-3.5 w-3.5" /> {remainingSec}d
                   </span>
                 )}
               </div>
@@ -401,7 +401,7 @@ export function UndercoverBoard({
                   disabled={!clueInput.trim()}
                   onClick={handleSendClue}
                 >
-                  <Send className="h-4 w-4" />
+                  <SendIcon className="h-4 w-4" />
                   Kirim
                 </GameButton>
               </div>
@@ -416,7 +416,7 @@ export function UndercoverBoard({
           {/* Clues Submitted This Round */}
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#786b51]">
-              <MessageSquareText className="h-3.5 w-3.5" /> Clue Ronde {view.round}
+              <MessageSquareTextIcon className="h-3.5 w-3.5" /> Clue Ronde {view.round}
             </div>
             {roundClues.length === 0 ? (
               <div className="rounded-2xl border-2 border-dashed border-[#d8cfa3] py-4 text-center text-xs font-bold text-[#8a7d63]">
@@ -506,7 +506,7 @@ export function UndercoverBoard({
                   {...holdPeekHandlers}
                   className="font-display inline-flex cursor-pointer select-none touch-none items-center gap-1 rounded-xl border border-[#d8cfa3] bg-[#fffdf0] px-2.5 py-1 text-xs font-bold text-[#5c1632]"
                 >
-                  {peekWord ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {peekWord ? <EyeOffIcon className="h-3.5 w-3.5" /> : <EyeIcon className="h-3.5 w-3.5" />}
                   Tahan Intip
                 </button>
               </div>
@@ -533,15 +533,15 @@ export function UndercoverBoard({
           {/* Mode & Timer Banner */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border-2 border-[#d8cfa3] bg-[#ebe4be] px-3.5 py-2 text-xs font-extrabold text-[#5c1632]">
             <span className="inline-flex items-center gap-1">
-              {isOpen ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              {isOpen ? <EyeIcon className="h-4 w-4" /> : <EyeOffIcon className="h-4 w-4" />}
               Mode: {isOpen ? "Terbuka" : "Rahasia"}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Vote className="h-4 w-4" />
+              <VoteIcon className="h-4 w-4" />
               {view.votedPlayerIds.length}/{alivePlayers.length} sudah vote
             </span>
             <span className="inline-flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+              <ClockIcon className="h-4 w-4" />
               {remainingSec === null ? "Unlimited" : `${remainingSec}d`}
             </span>
           </div>
@@ -651,7 +651,7 @@ export function UndercoverBoard({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gradient-to-b from-[#53ecff] to-[#1199e8] text-white shadow-sm">
-                    <SkipForward className="h-5 w-5" />
+                    <SkipForwardIcon className="h-5 w-5" />
                   </span>
                   <div>
                     <div className="font-display text-base font-bold text-[#1c3554]">
@@ -714,7 +714,7 @@ export function UndercoverBoard({
             </p>
             {remainingSec !== null && (
               <div className="font-display mt-2 inline-flex items-center gap-1 rounded-full bg-[#e0326a] px-3 py-1 text-sm font-bold text-white">
-                <Clock className="h-4 w-4" /> Sisa {remainingSec} detik
+                <ClockIcon className="h-4 w-4" /> Sisa {remainingSec} detik
               </div>
             )}
           </div>
@@ -740,7 +740,7 @@ export function UndercoverBoard({
                 disabled={!mrBlankGuess.trim()}
                 onClick={handleMrBlankGuess}
               >
-                <Sparkles className="h-5 w-5" />
+                <SparklesIcon className="h-5 w-5" />
                 Kunci Tebakan!
               </GameButton>
             </div>
@@ -768,7 +768,7 @@ export function UndercoverBoard({
       <GamePanel title={winnerTitle} ribbonColor="pink">
         <div className="mb-4 text-center">
           <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-gradient-to-b from-[#ffe259] to-[#f4900c] text-white shadow-lg">
-            <Trophy className="h-9 w-9" />
+            <TrophyIcon className="h-9 w-9" />
           </div>
           <p className="text-sm font-extrabold text-[#5c1632]">{view.winner?.reason}</p>
         </div>
@@ -822,7 +822,7 @@ export function UndercoverBoard({
                   <div>
                     <div className="flex items-center gap-1.5 text-sm font-extrabold text-[#3d2940]">
                       <span>{p.nickname}</span>
-                      {!p.alive && <Skull className="h-3.5 w-3.5 text-[#8a7d63]" />}
+                      {!p.alive && <SkullIcon className="h-3.5 w-3.5 text-[#8a7d63]" />}
                     </div>
                     <div className="text-xs font-bold text-[#786b51]">
                       Kata: <strong>{p.revealedWord ?? "(Kosong)"}</strong>
@@ -845,11 +845,11 @@ export function UndercoverBoard({
         {isHost ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <GameButton variant="yellow" size="md" fullWidth onClick={onPlayAgain}>
-              <Play className="h-5 w-5 fill-current" />
+              <PlayIcon className="h-5 w-5 fill-current" />
               Main Lagi!
             </GameButton>
             <GameButton variant="cyan" size="md" fullWidth onClick={onReturnLobby}>
-              <RotateCcw className="h-5 w-5" />
+              <RotateCcwIcon className="h-5 w-5" />
               Kembali ke Lobby
             </GameButton>
           </div>

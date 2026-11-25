@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface GamePanelProps {
@@ -44,7 +44,7 @@ export function GamePanel({
       ].join(" ")}
     >
       {title && (
-        <div className="relative -mx-5 mt-5 mb-4 flex items-center justify-center">
+        <div className="relative -mx-4 mt-4 flex items-center justify-center">
           {/* Left folded ribbon wing */}
           <svg
             aria-hidden="true"
@@ -82,14 +82,14 @@ export function GamePanel({
                 aria-label="Tutup"
                 className="absolute right-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#6d1839] text-white shadow-[inset_0_2px_0_rgba(255,255,255,0.25)] transition hover:scale-105 active:scale-95"
               >
-                <X className="h-5 w-5 stroke-[3]" />
+                <XIcon className="h-5 w-5 stroke-[3]" />
               </button>
             )}
           </div>
         </div>
       )}
 
-      <div className="p-5 sm:p-6">{children}</div>
+      <div className="p-3 sm:p-6">{children}</div>
     </div>
   );
 }

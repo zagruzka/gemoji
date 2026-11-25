@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 interface HudPillProps {
@@ -52,7 +52,7 @@ export function HudPill({
           aria-label={actionLabel}
           className="ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-white/80 bg-gradient-to-b from-[#a8f532] to-[#38b816] text-white shadow-[0_2px_0_#1e7513] active:translate-y-0.5"
         >
-          <Plus className="h-4 w-4 stroke-[3]" />
+          <PlusIcon className="h-4 w-4 stroke-[3]" />
         </button>
       )}
     </div>

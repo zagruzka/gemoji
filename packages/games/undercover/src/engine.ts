@@ -136,7 +136,7 @@ function buildClueTurnOrder(
 }
 
 function computeVoteEndsAt(config: UndercoverConfig, now: number): number | null {
-  if (config.voteDuration === "unlimited") return null;
+  if (config.voteDuration === 0) return null;
   return now + config.voteDuration * 1000;
 }
 
@@ -593,7 +593,7 @@ export function reduceUndercover(
             {
               channel: "public",
               content:
-                state.config.voteDuration === "unlimited"
+                state.config.voteDuration === 0
                   ? "Semua clue sudah terkumpul! Saatnya berdiskusi & voting (tanpa batas waktu)."
                   : `Semua clue sudah terkumpul! Voting dibuka selama ${state.config.voteDuration} detik.`,
             },

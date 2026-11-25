@@ -1,5 +1,5 @@
 import type { ChatChannel, ChatMessage } from "@gemoji/shared";
-import { Send, X } from "lucide-react";
+import { SendIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { GameButton } from "../../components/game-ui";
 
@@ -67,7 +67,7 @@ export function ChatDrawer({
             aria-label="Tutup chat"
             className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#6d1839] text-white"
           >
-            <X className="h-5 w-5 stroke-[3]" />
+            <XIcon className="h-5 w-5 stroke-[3]" />
           </button>
         </div>
 
@@ -156,7 +156,7 @@ export function ChatDrawer({
             disabled={!text.trim()}
             onClick={handleSubmit}
           >
-            <Send className="h-4 w-4" />
+            <SendIcon className="h-4 w-4" />
           </GameButton>
         </div>
       </div>

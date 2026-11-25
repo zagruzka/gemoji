@@ -1,6 +1,6 @@
 export const idLocale = {
   appName: "Gemoji!",
-  tagline: "Main game ringan bareng teman langsung dari browser",
+  tagline: "Main game bareng teman langsung di browsermu",
   actions: {
     createRoom: "Buat Room!",
     joinRoom: "Gabung Room",
@@ -41,7 +41,7 @@ export const idLocale = {
     voteUnlimited: "Unlimited",
   },
   status: {
-    online: "Server Siap",
+    online: "Server Online",
     offline: "Server Offline",
     comingSoon: "Segera Hadir",
     playable: "Siap Main",

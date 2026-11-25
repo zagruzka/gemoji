@@ -24,7 +24,7 @@ export const UndercoverConfigSchema = z.object({
     .union([z.literal(0), z.literal(30), z.literal(45), z.literal(60)])
     .default(45),
   voteDuration: z
-    .union([z.literal("unlimited"), z.literal(30), z.literal(60), z.literal(120)])
+    .union([z.literal(0), z.literal(30), z.literal(60), z.literal(120)])
     .default(60),
   voteMode: z.enum(["open", "secret"]).default("secret"),
   blindRole: z.boolean().default(true),

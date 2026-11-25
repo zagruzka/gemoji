@@ -42,7 +42,7 @@ describe("undercover game engine", () => {
       wordMode: "custom",
       undercoverCount: 1,
       mrBlankCount: 0,
-      voteDuration: "unlimited",
+      voteDuration: 0,
       voteMode: "open",
     });
 
@@ -88,7 +88,7 @@ describe("undercover game engine", () => {
       wordMode: "library",
       undercoverCount: 1,
       mrBlankCount: 0,
-      voteDuration: "unlimited",
+      voteDuration: 0,
       voteMode: "secret",
     });
 
@@ -198,7 +198,7 @@ describe("undercover game engine", () => {
       undercoverCount: 1,
       mrBlankCount: 0,
       clueDurationSec: 0,
-      voteDuration: "unlimited",
+      voteDuration: 0,
       voteMode: "open",
     });
 
