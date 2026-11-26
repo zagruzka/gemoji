@@ -23,9 +23,8 @@ import {
   randomAvatar,
   saveGuestProfile,
 } from "../features/connection/profile";
+import { GamePickerModal } from "../games/GamePickerModal";
 import {
-  GAME_PLAY_STYLE_LABEL,
-  GAME_UI_CATALOG,
   loadSelectedGameId,
   saveSelectedGameId,
 } from "../games/registry";
@@ -61,9 +60,6 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
   const [joining, setJoining] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
-
-  const selectedGame =
-    GAME_UI_CATALOG.find((g) => g.id === selectedGameId) ?? GAME_UI_CATALOG[0]!;
 
   useEffect(() => {
     fetch("/api/health")
@@ -227,98 +223,17 @@ export function HomePage({ onEnterRoom, onNotify }: HomePageProps) {
       <div className="h-2" />
 
       {/* Create Room: Game Picker Modal */}
-      <GameModal
+      <GamePickerModal
         open={showCreateModal}
-        onClose={() => {
-          if (!creating) setShowCreateModal(false);
-        }}
-      >
-        <GamePanel
-          title="Pilih Game"
-          ribbonColor="pink"
-          onClose={() => {
-            if (!creating) setShowCreateModal(false);
-          }}
-          className="w-full max-w-md"
-        >
-          <div className="space-y-4">
-            {/* List Game */}
-            <div className="grid grid-cols-3 gap-2">
-              {GAME_UI_CATALOG.map((game) => {
-                const isSelected = selectedGameId === game.id;
-                const isComingSoon = game.status !== "available";
-                return (
-                  <button
-                    key={game.id}
-                    type="button"
-                    onClick={() => handleSelectGame(game.id)}
-                    className={[
-                      "font-display flex cursor-pointer flex-col items-center rounded-2xl border-2 px-2 py-2.5 text-center transition",
-                      isSelected
-                        ? "border-[#e0326a] bg-[#fff9dc] text-[#5c1632] shadow-[0_4px_0_#e0326a]"
-                        : isComingSoon
-                          ? "border-[#d8cfa3] bg-[#ebe4be] text-[#6d624d] opacity-65 hover:bg-[#f7f2d4] hover:opacity-85"
-                          : "border-[#d8cfa3] bg-[#ebe4be] text-[#6d624d] hover:bg-[#f7f2d4]",
-                    ].join(" ")}
-                  >
-                    <game.icon className="mb-1 size-5" />
-                    <span className="text-sm font-bold leading-tight">{game.name}</span>
-                    <span className="mt-0.5 text-[10px] font-semibold">
-                      {isComingSoon ? "Coming Soon" : `${game.minPlayers}–${game.maxPlayers} pemain`}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Deskripsi Game Terpilih */}
-            <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
-              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-1.5">
-                <span className="font-display inline-flex items-center gap-1.5 text-sm font-bold text-[#5c1632]">
-                  <selectedGame.icon className="size-4 text-[#e0326a]" />
-                  {selectedGame.name}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={[
-                      "rounded-full px-2 py-0.5 text-[11px] font-extrabold",
-                      selectedGame.playStyle === "team"
-                        ? "bg-[#e3f4ff] text-[#105f99]"
-                        : "bg-[#ffe8ef] text-[#b31b4e]",
-                    ].join(" ")}
-                  >
-                    {GAME_PLAY_STYLE_LABEL[selectedGame.playStyle]}
-                  </span>
-                  <span className="rounded-full bg-[#ebe4be] px-2 py-0.5 text-[11px] font-extrabold text-[#6e6049]">
-                    {selectedGame.minPlayers}–{selectedGame.maxPlayers} pemain
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs font-bold leading-relaxed text-[#5c4e3d]">
-                {selectedGame.description}
-              </p>
-            </div>
-
-            {/* Tombol Pilih Game */}
-            <GameButton
-              variant="yellow"
-              size="md"
-              fullWidth
-              disabled={creating || selectedGame.status !== "available"}
-              onClick={handleCreateRoom}
-            >
-              {selectedGame.status !== "available" ? (
-                "Coming Soon"
-              ) : (
-                <>
-                  <PlayIcon className="h-5 w-5 fill-current" />
-                  {creating ? "Membuat Room..." : "Pilih Game"}
-                </>
-              )}
-            </GameButton>
-          </div>
-        </GamePanel>
-      </GameModal>
+        onClose={() => setShowCreateModal(false)}
+        selectedGameId={selectedGameId}
+        onSelectGame={handleSelectGame}
+        onConfirm={handleCreateRoom}
+        title="Pilih Game"
+        confirmLabel="Pilih Game"
+        confirming={creating}
+        confirmingLabel="Membuat Room..."
+      />
 
       {/* Join Room Modal */}
       <GameModal

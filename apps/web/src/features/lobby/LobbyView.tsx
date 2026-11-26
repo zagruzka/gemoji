@@ -3,9 +3,19 @@ import { UndercoverConfigSchema } from "@gemoji/game-undercover";
 import { UnoConfigSchema } from "@gemoji/game-uno";
 import { WordtrapConfigSchema } from "@gemoji/game-wordtrap";
 import type { RoomPublicState } from "@gemoji/shared";
-import { CheckIcon, CopyIcon, CrownIcon, HelpCircleIcon, PlayIcon, UserXIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  ArrowLeftRightIcon,
+  CheckIcon,
+  CopyIcon,
+  CrownIcon,
+  HelpCircleIcon,
+  PlayIcon,
+  UserXIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
+import { GamePickerModal } from "../../games/GamePickerModal";
 import { GAME_UI_CATALOG } from "../../games/registry";
 import { SpaceteamSettings } from "../../games/spaceteam/SpaceteamSettings";
 import { UndercoverSettings } from "../../games/undercover/UndercoverSettings";
@@ -15,6 +25,7 @@ import { WordtrapSettings } from "../../games/wordtrap/WordtrapSettings";
 interface LobbyViewProps {
   room: RoomPublicState;
   myPlayerId: string;
+  onChangeGame: (gameId: string) => void;
   onUpdateConfig: (patch: Record<string, unknown>) => void;
   onKickPlayer: (targetPlayerId: string) => void;
   onStartGame: () => void;
@@ -25,6 +36,7 @@ interface LobbyViewProps {
 export function LobbyView({
   room,
   myPlayerId,
+  onChangeGame,
   onUpdateConfig,
   onKickPlayer,
   onStartGame,
@@ -32,13 +44,30 @@ export function LobbyView({
   onLeave,
 }: LobbyViewProps) {
   const [copied, setCopied] = useState(false);
+  const [showGamePicker, setShowGamePicker] = useState(false);
+  const [draftGameId, setDraftGameId] = useState(room.gameId);
+
   const isHost = room.hostId === myPlayerId;
   const gameMeta = GAME_UI_CATALOG.find((g) => g.id === room.gameId);
   const minPlayers = gameMeta?.minPlayers ?? 3;
   const maxPlayers = gameMeta?.maxPlayers ?? 12;
-  const canStart = room.players.length >= minPlayers;
+  const tooFewPlayers = room.players.length < minPlayers;
+  const tooManyPlayers = room.players.length > maxPlayers;
+  const canStart = !tooFewPlayers && !tooManyPlayers;
 
   const shareUrl = `${window.location.origin}/room/${room.roomCode}`;
+
+  const handleOpenGamePicker = () => {
+    setDraftGameId(room.gameId);
+    setShowGamePicker(true);
+  };
+
+  const handleConfirmGameChange = (nextGameId: string) => {
+    if (nextGameId !== room.gameId) {
+      onChangeGame(nextGameId);
+    }
+    setShowGamePicker(false);
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -74,13 +103,36 @@ export function LobbyView({
         {/* Player List */}
         <div className="mb-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="font-display text-sm font-bold uppercase tracking-wide text-[#5c1632]">
+            <span
+              className={[
+                "font-display text-sm font-bold uppercase tracking-wide",
+                tooManyPlayers ? "text-[#c72258]" : "text-[#5c1632]",
+              ].join(" ")}
+            >
               Pemain ({room.players.length}/{maxPlayers})
             </span>
-            <span className="text-xs font-extrabold text-[#786b51]">
-              Minimal {minPlayers} pemain
+            <span
+              className={[
+                "text-xs font-extrabold",
+                tooManyPlayers ? "text-[#c72258]" : "text-[#786b51]",
+              ].join(" ")}
+            >
+              {tooManyPlayers ? `Maksimal ${maxPlayers} pemain` : `Minimal ${minPlayers} pemain`}
             </span>
           </div>
+
+          {tooManyPlayers && (
+            <div className="mb-2.5 flex items-start gap-2 rounded-2xl border-2 border-[#f5b4c9] bg-[#fff0f5] px-3 py-2 text-xs font-extrabold text-[#9e1744]">
+              <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
+              <span>
+                Terlalu banyak pemain untuk {gameMeta?.name ?? "game ini"} ({room.players.length}/
+                {maxPlayers}).{" "}
+                {isHost
+                  ? `Keluarkan ${room.players.length - maxPlayers} pemain atau ganti ke game lain.`
+                  : "Menunggu Host menyesuaikan jumlah pemain atau mengganti game."}
+              </span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {room.players.map((p) => {
@@ -175,7 +227,9 @@ export function LobbyView({
               <PlayIcon className="h-6 w-6 fill-current" />
               {canStart
                 ? "Mulai Game!"
-                : `Butuh ${minPlayers - room.players.length} Pemain Lagi`}
+                : tooManyPlayers
+                  ? `Kelebihan ${room.players.length - maxPlayers} Pemain (Maks ${maxPlayers})`
+                  : `Butuh ${minPlayers - room.players.length} Pemain Lagi`}
             </GameButton>
           ) : (
             <div className="rounded-2xl border-2 border-dashed border-[#c8bf94] bg-[#ebe4be] py-3 text-center text-sm font-extrabold text-[#6e6049]">
@@ -188,11 +242,48 @@ export function LobbyView({
             Cara Bermain
           </GameButton>
 
-          <GameButton variant="pink" size="sm" fullWidth onClick={onLeave}>
-            Keluar ke Beranda
-          </GameButton>
+          {isHost ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              <GameButton
+                variant="cyan"
+                size="sm"
+                fullWidth
+                onClick={handleOpenGamePicker}
+                className="px-2.5 text-sm sm:px-4 sm:text-base"
+              >
+                <ArrowLeftRightIcon className="h-4 w-4 shrink-0" />
+                Ganti Game
+              </GameButton>
+              <GameButton
+                variant="pink"
+                size="sm"
+                fullWidth
+                onClick={onLeave}
+                className="px-2.5 text-sm sm:px-4 sm:text-base"
+              >
+                Keluar ke Beranda
+              </GameButton>
+            </div>
+          ) : (
+            <GameButton variant="pink" size="sm" fullWidth onClick={onLeave}>
+              Keluar ke Beranda
+            </GameButton>
+          )}
         </div>
       </GamePanel>
+
+      {/* Host Game Switcher Modal */}
+      <GamePickerModal
+        open={showGamePicker && isHost}
+        onClose={() => setShowGamePicker(false)}
+        selectedGameId={draftGameId}
+        onSelectGame={setDraftGameId}
+        onConfirm={handleConfirmGameChange}
+        title="Ganti Game"
+        confirmLabel="Ganti ke Game Ini"
+        currentGameId={room.gameId}
+        currentPlayerCount={room.players.length}
+      />
     </div>
   );
 }

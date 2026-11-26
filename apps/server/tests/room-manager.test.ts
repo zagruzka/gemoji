@@ -367,4 +367,54 @@ describe("RoomManager integration (Lobby + Chat + Undercover)", () => {
     expect(room.hostId).toBe("p2");
     expect(room.chatHistory.some((m) => m.content.includes("sedang offline"))).toBe(true);
   });
+
+  test("switching games in lobby: host-only, resets config, notifies lobby chat, and enforces maxPlayers on start", () => {
+    const registry = new GameRegistry();
+    registry.register(undercoverGameModule);
+    registry.register(unoGameModule);
+    registry.register(spaceteamGameModule);
+    const manager = new RoomManager(new InMemoryRoomStore(), registry);
+
+    const room = manager.createRoom("undercover");
+    const sinks = Array.from({ length: 9 }, () => createMockSink());
+    for (let i = 0; i < 9; i++) {
+      const res = manager.joinRoom(room.roomCode, `p${i + 1}`, `Pemain${i + 1}`, "fox", sinks[i]!.sink);
+      expect(res.ok).toBe(true);
+    }
+
+    // Non-host tidak bisa mengganti game
+    expect(manager.updateConfig(room.roomCode, "p2", { gameId: "uno" })).not.toBeNull();
+    expect(room.gameId).toBe("undercover");
+
+    // Host mengganti game dari Undercover -> UNO (kapasitas 10, 9 pemain valid)
+    expect(manager.updateConfig(room.roomCode, "p1", { gameId: "uno" })).toBeNull();
+    expect(room.gameId).toBe("uno");
+    expect(room.config).toEqual(unoGameModule.defaultConfig);
+    expect(
+      room.chatHistory.some(
+        (m) => m.isSystem && m.channel === "lobby" && m.content.includes("mengganti game ke UNO"),
+      ),
+    ).toBe(true);
+
+    // Host mulai UNO, tidak bisa ganti game saat PLAYING
+    expect(manager.startGame(room.roomCode, "p1")).toBeNull();
+    expect(manager.updateConfig(room.roomCode, "p1", { gameId: "spaceteam" })).not.toBeNull();
+
+    // Kembali ke lobby, lalu ganti ke Spaceteam (maks 8 pemain, saat ini 9 pemain)
+    expect(manager.returnToLobby(room.roomCode, "p1")).toBeNull();
+    expect(manager.updateConfig(room.roomCode, "p1", { gameId: "spaceteam" })).toBeNull();
+    expect(room.gameId).toBe("spaceteam");
+    expect(room.players.length).toBe(9);
+
+    // Start game ditolak karena melebihi batas maksimal 8 pemain
+    const tooManyErr = manager.startGame(room.roomCode, "p1");
+    expect(tooManyErr).not.toBeNull();
+    expect(tooManyErr).toContain("Maksimal 8 pemain");
+
+    // Setelah Host mengeluarkan 1 pemain (menjadi 8), Spaceteam bisa dimulai
+    expect(manager.kickPlayer(room.roomCode, "p1", "p9")).toBeNull();
+    expect(room.players.length).toBe(8);
+    expect(manager.startGame(room.roomCode, "p1")).toBeNull();
+    expect(room.status).toBe("PLAYING");
+  });
 });

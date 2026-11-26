@@ -86,6 +86,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
   const lastWordtrapLogIdRef = useRef<string | null>(null);
   const lastUnoLogIdRef = useRef<string | null>(null);
   const prevRoomPlayersRef = useRef<Map<string, { nickname: string; isConnected: boolean }> | null>(null);
+  const prevGameIdRef = useRef<string | null>(null);
 
   // Check if room exists on mount
   useEffect(() => {
@@ -149,6 +150,12 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
         prevRoomPlayersRef.current = new Map(
           nextPlayers.map((p) => [p.id, { nickname: p.nickname, isConnected: p.isConnected }]),
         );
+
+        if (prevGameIdRef.current !== null && prevGameIdRef.current !== msg.payload.gameId) {
+          const nextGame = GAME_UI_CATALOG.find((g) => g.id === msg.payload.gameId);
+          onNotify(`Game diganti ke ${nextGame?.name ?? msg.payload.gameId}!`, "info");
+        }
+        prevGameIdRef.current = msg.payload.gameId;
 
         setRoom(msg.payload);
         saveSelectedGameId(msg.payload.gameId);
@@ -413,7 +420,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
         <div className="flex flex-wrap items-center gap-2">
           {room && room.status !== "PLAYING" && (
             <HudPill
-              accent="cyan"
+              accent={room.players.length > maxPlayers ? "pink" : "cyan"}
               icon={<UsersIcon className="h-4 w-4" />}
               label="Pemain"
               value={`${room.players.length}/${maxPlayers}`}
@@ -561,6 +568,9 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
           <LobbyView
             room={room}
             myPlayerId={myPlayerId}
+            onChangeGame={(gameId) =>
+              send({ type: "ROOM_UPDATE_CONFIG", payload: { gameId } })
+            }
             onUpdateConfig={(patch: Record<string, unknown>) =>
               send({ type: "ROOM_UPDATE_CONFIG", payload: { config: patch } })
             }

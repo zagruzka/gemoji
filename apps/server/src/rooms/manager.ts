@@ -486,19 +486,34 @@ export class RoomManager {
     if (room.hostId !== playerId) return "Hanya Host yang dapat mengubah pengaturan";
     if (room.status !== "LOBBY") return "Pengaturan hanya bisa diubah di Lobby";
 
+    const prevGameId = room.gameId;
     const nextGameId = input.gameId ?? room.gameId;
     const mod = this.registry.get(nextGameId);
     if (!mod) return `Game '${nextGameId}' tidak tersedia`;
 
-    const mergedRaw =
-      nextGameId !== room.gameId
-        ? { ...mod.defaultConfig, ...(input.config ?? {}) }
-        : { ...room.config, ...(input.config ?? {}) };
+    const isGameChanged = nextGameId !== prevGameId;
+    const mergedRaw = isGameChanged
+      ? { ...mod.defaultConfig, ...(input.config ?? {}) }
+      : { ...room.config, ...(input.config ?? {}) };
 
     room.gameId = nextGameId;
     room.config = mod.parseConfig(mergedRaw);
     room.updatedAt = Date.now();
     this.broadcastRoomState(room);
+
+    if (isGameChanged) {
+      const host = room.players.find((p) => p.id === playerId);
+      this.pushChatMessage(room, {
+        id: `sys_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        channel: "lobby",
+        senderId: null,
+        senderName: "Sistem",
+        content: `${host?.nickname ?? "Host"} mengganti game ke ${mod.meta.name}.`,
+        timestamp: Date.now(),
+        isSystem: true,
+      });
+    }
+
     return null;
   }
 
@@ -527,6 +542,9 @@ export class RoomManager {
     if (!mod) return "Game tidak ditemukan";
     if (room.players.length < mod.meta.minPlayers) {
       return `Minimal ${mod.meta.minPlayers} pemain untuk memulai ${mod.meta.name}`;
+    }
+    if (room.players.length > mod.meta.maxPlayers) {
+      return `Maksimal ${mod.meta.maxPlayers} pemain untuk memulai ${mod.meta.name}`;
     }
 
     const config = mod.parseConfig(room.config);
