@@ -9,18 +9,44 @@ import {
   AlertTriangleIcon,
   BanIcon,
   ClockIcon,
-  LayersIcon,
+  Grid2X2Icon,
   MegaphoneIcon,
   PlayIcon,
   RefreshCwIcon,
   RotateCcwIcon,
   SkipForwardIcon,
-  SparklesIcon,
   TrophyIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
+
+function UnoBackLogo({ compact = false }: { compact?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={[
+        "relative flex select-none items-center justify-center",
+        compact ? "h-12 w-12" : "h-14 w-16",
+      ].join(" ")}
+    >
+      <span
+        className={[
+          "absolute rotate-25 rounded-full bg-red-600",
+          compact ? "h-13 w-8" : "h-16 w-10",
+        ].join(" ")}
+      />
+      <span
+        className={[
+          "font-display relative z-10 -rotate-12 font-black italic tracking-tight text-yellow-400 [text-shadow:-2px_2px_0_#1a0d1c,1px_-1px_0_#1a0d1c,0_3px_5px_rgba(0,0,0,0.5)]",
+          compact ? "text-base" : "text-3xl",
+        ].join(" ")}
+      >
+        UNO
+      </span>
+    </span>
+  );
+}
 
 interface UnoBoardProps {
   view: UnoPlayerView;
@@ -40,6 +66,7 @@ const COLOR_META: Record<
     border: string;
     mutedBg: string;
     mutedBorder: string;
+    mutedText: string;
     pill: string;
     picker: string;
   }
@@ -48,8 +75,9 @@ const COLOR_META: Record<
     label: "Merah",
     bg: "from-[#ff5a5f] to-[#d62839]",
     border: "border-[#991522]",
-    mutedBg: "from-[#a85b60] to-[#7d3b41]",
-    mutedBorder: "border-[#59262b]",
+    mutedBg: "from-[#6b2429] to-[#47161a]",
+    mutedBorder: "border-[#2e0c0f]",
+    mutedText: "text-[#f2b8bc]/50",
     pill: "bg-[#e63946] text-white border-[#991522]",
     picker: "from-[#ff6b6b] to-[#d62839] border-[#991522]",
   },
@@ -57,8 +85,9 @@ const COLOR_META: Record<
     label: "Kuning",
     bg: "from-[#ffe047] to-[#f4a800]",
     border: "border-[#b57300]",
-    mutedBg: "from-[#b8a258] to-[#8f7b38]",
-    mutedBorder: "border-[#665624]",
+    mutedBg: "from-[#735c1e] to-[#4d3c10]",
+    mutedBorder: "border-[#302407]",
+    mutedText: "text-[#f5dfa0]/50",
     pill: "bg-[#f4b400] text-[#4a2b00] border-[#b57300]",
     picker: "from-[#ffe55c] to-[#f0a500] border-[#b57300]",
   },
@@ -66,8 +95,9 @@ const COLOR_META: Record<
     label: "Hijau",
     bg: "from-[#5cd85a] to-[#249a3f]",
     border: "border-[#146627]",
-    mutedBg: "from-[#5c8f60] to-[#3d6943]",
-    mutedBorder: "border-[#27472c]",
+    mutedBg: "from-[#22542b] to-[#14381b]",
+    mutedBorder: "border-[#0b210f]",
+    mutedText: "text-[#b6e6be]/75",
     pill: "bg-[#2ea44f] text-white border-[#146627]",
     picker: "from-[#6be068] to-[#249a3f] border-[#146627]",
   },
@@ -75,8 +105,9 @@ const COLOR_META: Record<
     label: "Biru",
     bg: "from-[#4dc3ff] to-[#1a75e8]",
     border: "border-[#0e4999]",
-    mutedBg: "from-[#5980a3] to-[#3b5d7d]",
-    mutedBorder: "border-[#243d54]",
+    mutedBg: "from-[#1d456b] to-[#112c47]",
+    mutedBorder: "border-[#081a2c]",
+    mutedText: "text-[#b8dcfa]/75",
     pill: "bg-[#1d8cf8] text-white border-[#0e4999]",
     picker: "from-[#5ccaff] to-[#1a75e8] border-[#0e4999]",
   },
@@ -91,20 +122,20 @@ const COLOR_SORT_ORDER: Record<UnoCardColor, number> = {
 };
 
 function renderCardSymbol(value: UnoCard["value"], large = false) {
-  const iconCls = large ? "h-8 w-8 stroke-[2.75]" : "h-6 w-6 stroke-[2.75]";
+  const iconCls = large ? "size-8 stroke-[2.75]" : "size-6 stroke-[2.75]";
   if (value === "skip") return <BanIcon className={iconCls} />;
   if (value === "reverse") return <RefreshCwIcon className={iconCls} />;
   if (value === "draw2") return <span className={large ? "text-3xl" : "text-2xl"}>+2</span>;
   if (value === "wild4") return <span className={large ? "text-3xl" : "text-2xl"}>+4</span>;
-  if (value === "wild") return <SparklesIcon className={iconCls} />;
+  if (value === "wild") return <Grid2X2Icon className={iconCls + ' rotate-45'} />;
   return <span className={large ? "text-4xl" : "text-3xl"}>{value}</span>;
 }
 
 function renderCornerSymbol(value: UnoCard["value"], large = false) {
-  const iconCls = large ? "h-4 w-4 stroke-[3]" : "h-3.5 w-3.5 stroke-[3]";
+  const iconCls = large ? "size-4 stroke-[3]" : "size-3.5 stroke-[3]";
   if (value === "skip") return <BanIcon className={iconCls} />;
   if (value === "reverse") return <RefreshCwIcon className={iconCls} />;
-  if (value === "wild") return <SparklesIcon className={iconCls} />;
+  if (value === "wild") return <Grid2X2Icon className={iconCls + ' rotate-45'} />;
   if (value === "draw2") return "+2";
   if (value === "wild4") return "+4";
   return value;
@@ -141,20 +172,22 @@ function UnoCardTile({
   const colorStyle =
     card.color === "wild"
       ? unplayable
-        ? "from-[#4e485c] via-[#3c3648] to-[#2d2838] border-[#1e1a26]"
+        ? "from-[#2e2a38] via-[#211e29] to-[#15131a] border-[#0b090f]"
         : "from-[#2d2240] via-[#1c1528] to-[#120d1a] border-[#09060d]"
       : unplayable
         ? `${COLOR_META[card.color].mutedBg} ${COLOR_META[card.color].mutedBorder}`
         : `${COLOR_META[card.color].bg} ${COLOR_META[card.color].border}`;
 
   const textColor =
-    card.color === "yellow"
+    card.color === "wild"
       ? unplayable
-        ? "text-[#4a3916]/85"
-        : "text-[#4a2b00]"
+        ? "text-white/55"
+        : "text-white"
       : unplayable
-        ? "text-white/75"
-        : "text-white";
+        ? COLOR_META[card.color].mutedText
+        : card.color === "yellow"
+          ? "text-[#4a2b00]"
+          : "text-white";
 
   const corner = renderCornerSymbol(card.value, size === "lg");
   const dims = size === "lg" ? "h-32 w-22 rounded-2xl" : "h-26 w-18 rounded-xl";
@@ -182,7 +215,7 @@ function UnoCardTile({
         delay: hasEnteredRef.current ? 0 : (enterDelay ?? 0),
       }}
       className={[
-        "font-display relative flex shrink-0 select-none flex-col items-center justify-center overflow-hidden border-[3px] bg-gradient-to-b font-bold shadow-[0_5px_0_rgba(0,0,0,0.28)] transition-[box-shadow,border-color]",
+        "font-display relative flex shrink-0 select-none flex-col items-center justify-center overflow-hidden border-[3px] bg-gradient-to-b font-semibold shadow-[0_5px_0_rgba(0,0,0,0.28)] transition-[box-shadow,border-color]",
         dims,
         colorStyle,
         textColor,
@@ -199,35 +232,39 @@ function UnoCardTile({
       {/* Inner white frame */}
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-1 rounded-[9px] border-2 ${unplayable ? "border-white/30" : "border-white/65"}`}
+        className={`pointer-events-none absolute inset-0.5 rounded-[9px] border-2 ${unplayable ? "border-white/25" : "border-white/65"}`}
       />
 
       {/* Tilted UNO oval backdrop */}
       {isWild ? (
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute h-16 w-12 -rotate-25 rounded-full bg-[conic-gradient(#ff5a5f_0deg_90deg,#ffe047_90deg_180deg,#5cd85a_180deg_270deg,#4dc3ff_270deg_360deg)] shadow-inner ${unplayable ? "opacity-35 saturate-50" : "opacity-90"}`}
+          className={`pointer-events-none absolute h-16 w-12 rotate-25 rounded-full bg-[conic-gradient(#ff5a5f_0deg_90deg,#ffe047_90deg_180deg,#5cd85a_180deg_270deg,#4dc3ff_270deg_360deg)] shadow-inner ${unplayable ? "opacity-25 saturate-50" : "opacity-90"}`}
         />
       ) : (
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute h-16 w-12 -rotate-25 rounded-full ${unplayable ? "bg-white/12" : "bg-white/22"}`}
+          className={`pointer-events-none absolute h-16 w-12 rotate-25 rounded-full ${unplayable ? "bg-white/10" : "bg-white/22"}`}
         />
       )}
 
       {/* Corner indices (round icons for skip/reverse matching center) */}
-      <span className={`absolute left-1.5 top-1.5 z-10 flex items-center justify-center font-extrabold leading-none drop-shadow ${cornerTextSize}`}>
+      <span
+        className={`absolute left-1.5 top-1.5 z-10 flex items-center justify-center leading-none ${unplayable ? "" : "drop-shadow"} ${cornerTextSize}`}
+      >
         {corner}
       </span>
-      <span className={`absolute bottom-1.5 right-1.5 z-10 flex rotate-180 items-center justify-center font-extrabold leading-none drop-shadow ${cornerTextSize}`}>
+      <span
+        className={`absolute bottom-1.5 right-1.5 z-10 flex rotate-180 items-center justify-center leading-none ${unplayable ? "" : "drop-shadow"} ${cornerTextSize}`}
+      >
         {corner}
       </span>
 
       {/* Center symbol */}
       <span
         className={[
-          "relative z-10 flex items-center justify-center leading-none drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)]",
-          isWild ? (unplayable ? "text-white/75" : "text-white") : "",
+          "relative z-10 flex items-center justify-center leading-none",
+          unplayable ? "" : "drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)]",
         ].join(" ")}
       >
         {renderCardSymbol(card.value, size === "lg")}
@@ -283,6 +320,7 @@ export function UnoBoard({
 }: UnoBoardProps) {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [pendingWildCardId, setPendingWildCardId] = useState<string | null>(null);
+  const [catchReadyForPlayerId, setCatchReadyForPlayerId] = useState<string | null>(null);
   const [drawFlies, setDrawFlies] = useState<DrawFlyItem[]>([]);
   const [playFlies, setPlayFlies] = useState<PlayFlyItem[]>([]);
   const [displayedTopDiscard, setDisplayedTopDiscard] = useState<UnoCard>(view.topDiscard);
@@ -316,6 +354,20 @@ export function UnoBoard({
       setSelectedCardId(null);
     }
   }, [selectedCardId, view.me.hand]);
+
+  // Munculkan tombol Dorr di pemain lain setelah delay 1 detik
+  useEffect(() => {
+    const targetId = view.unoVulnerablePlayerId;
+    if (!targetId || targetId === view.me.id || view.phase !== "PLAYING") {
+      setCatchReadyForPlayerId(null);
+      return;
+    }
+    setCatchReadyForPlayerId(null);
+    const timer = setTimeout(() => {
+      setCatchReadyForPlayerId(targetId);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [view.unoVulnerablePlayerId, view.unoCatchableAt, view.me.id, view.phase]);
 
   // Detect Draw (Nx cards flying from Deck -> Hand/Player) & Play (1x real card flying from Hand/Player -> Discard)
   useEffect(() => {
@@ -595,10 +647,46 @@ export function UnoBoard({
     view.me.isMyTurn && view.me.canDraw && view.me.playableCardIds.length === 0;
   const mustSkip =
     view.me.isMyTurn && view.me.canPass && view.me.playableCardIds.length === 0;
+  const showHandTurnOutline =
+    view.me.isMyTurn &&
+    !selectedCardId &&
+    !pendingWildCardId &&
+    !mustDrawDeck &&
+    !mustSkip;
+
+  const narratorText = view.me.isMyTurn
+    ? canPlaySelectedOnTable
+      ? "Klik meja untuk memainkan kartu"
+      : view.pendingDraw > 0
+        ? `Penalti +${view.pendingDraw}! Tumpuk ${view.pendingDrawType === "wild4" ? "+4" : "+2/+4"} atau klik Deck`
+        : view.me.canPass
+          ? view.me.playableCardIds.length > 0
+            ? "Pilih kartu & klik meja, atau klik Skip"
+            : "Tidak ada kartu cocok, klik Skip!"
+          : view.me.playableCardIds.length > 0
+            ? "Giliranmu! Angkat kartu lalu klik meja"
+            : "Giliranmu! Tidak ada kartu cocok, klik Deck"
+    : currentTurnPlayer && onlineById?.[currentTurnPlayer.id] === false
+      ? `${currentTurnPlayer.nickname} sedang offline...`
+      : `Menunggu giliran ${currentTurnPlayer?.nickname ?? "..."}...`;
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-3">
-      <GamePanel title="UNO!" ribbonColor="pink">
+      <GamePanel
+        ribbonColor="pink"
+        ribbonContent={
+          <div className="flex w-full items-center justify-between gap-2">
+            <p className="font-display flex-1 text-center text-sm font-bold leading-snug tracking-wide text-white drop-shadow-[0_2px_0_rgba(120,16,54,0.65)] sm:text-base">
+              {narratorText}
+            </p>
+            {remainingSec !== null && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/50 bg-[#6d1839] px-2.5 py-0.5 text-xs font-extrabold text-white shadow-inner">
+                <ClockIcon className="h-3.5 w-3.5" /> {remainingSec}d
+              </span>
+            )}
+          </div>
+        }
+      >
         {/* Players & Turn Order Strip */}
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5">
           {view.turnOrder.map((pid) => {
@@ -685,17 +773,17 @@ export function UnoBoard({
               disabled={!view.me.canDraw}
               animate={
                 mustDrawDeck && !canPlaySelectedOnTable
-                  ? { scale: [1, 1.035] }
+                  ? { scale: [1, 1.07] }
                   : { scale: 1 }
               }
               transition={
                 mustDrawDeck && !canPlaySelectedOnTable
                   ? {
-                      repeat: Infinity,
-                      repeatType: "mirror",
-                      duration: 0.9,
-                      ease: "easeInOut",
-                    }
+                    repeat: Infinity,
+                    repeatType: "mirror",
+                    duration: 0.9,
+                    ease: "easeInOut",
+                  }
                   : { duration: 0.15 }
               }
               whileHover={view.me.canDraw ? { y: -4, scale: 1.04 } : undefined}
@@ -706,7 +794,7 @@ export function UnoBoard({
                 onAction("DRAW_CARD", {});
               }}
               className={[
-                "font-display relative flex h-32 w-22 flex-col items-center justify-center rounded-2xl border-[3px] border-[#3d1736] bg-gradient-to-b from-[#6540bb] to-[#3f2087] text-white shadow-[0_6px_0_#271257] outline-none transition",
+                "font-display relative flex h-32 w-22 flex-col items-center justify-evenly rounded-2xl border-[3px] border-[#3d1736] bg-gradient-to-b from-[#6540bb] to-[#3f2087] text-white shadow-[0_6px_0_#271257] outline-none transition",
                 mustDrawDeck
                   ? "cursor-pointer ring-4 ring-[#ffe047]"
                   : view.me.canDraw
@@ -716,13 +804,11 @@ export function UnoBoard({
             >
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-1 rounded-[10px] border-2 border-white/40"
+                className="pointer-events-none absolute inset-0.5 rounded-[10px] border-2 border-white/40"
               />
-              <LayersIcon className="mb-1 h-7 w-7" />
-              <span className="text-xs font-bold uppercase tracking-wide">
-                {view.pendingDraw > 0 ? `Ambil +${view.pendingDraw}` : "Ambil"}
-              </span>
-              <span className="mt-0.5 rounded-full bg-black/30 px-2 py-0.2 text-[10px]">
+              <span></span>
+              <UnoBackLogo />
+              <span className="rounded-full bg-black/30 px-2 py-0.2 text-[10px]">
                 {view.drawPileCount} kartu
               </span>
             </motion.button>
@@ -743,80 +829,93 @@ export function UnoBoard({
             <span className="text-[11px] font-extrabold text-[#786b51]">Kartu Teratas</span>
           </div>
 
-          {/* Centered Tap-to-Play Callout when a playable card is raised */}
+          {/* Full-Table Clickable Overlay when a playable card is raised (Never Blocked by Cards!) */}
           {canPlaySelectedOnTable && (
-            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4">
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTableClickToPlay();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleTableClickToPlay();
+                }
+              }}
+              className="absolute inset-0 z-[25] flex cursor-pointer items-center justify-center px-4"
+            >
               <div className="font-display rounded-2xl border-2 border-[#e0326a] bg-[#fffdf0]/95 px-4 py-2 text-center text-sm font-bold text-[#c72258] shadow-lg">
-                Ketuk meja untuk main!
+                Klik meja untuk memainkan kartu
               </div>
             </div>
           )}
 
-          {/* Bottom-Left Corner Overlay: UNO! & Tangkap! (No ViewHeight Shift) */}
-          <div
-            className="absolute bottom-2.5 left-2.5 z-20 flex items-center gap-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
+          {/* Bottom-Center Overlay: UNO!, Dorr! & Skip (Blue, No ViewHeight Shift) */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-20 flex items-center justify-center gap-2 px-3">
             {view.me.canCallUno && (
               <button
                 type="button"
-                onClick={() => onAction("CALL_UNO", {})}
-                className="font-display inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-[#fff8a6] bg-gradient-to-b from-[#fff05a] to-[#ffae19] px-3 py-1.5 text-xs font-bold text-[#5c1632] shadow-[0_3px_0_#c9386b] transition hover:brightness-105 active:translate-y-0.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAction("CALL_UNO", {});
+                }}
+                className="font-display pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-[#fff8a6] bg-gradient-to-b from-[#fff05a] to-[#ffae19] px-3 py-1.5 text-xs font-bold text-[#5c1632] shadow-[0_3px_0_#c9386b] transition hover:brightness-105 active:translate-y-0.5"
               >
                 <MegaphoneIcon className="h-3.5 w-3.5" />
                 UNO!
               </button>
             )}
 
-            {vulnerablePlayer && vulnerablePlayer.id !== view.me.id && (
-              <button
-                type="button"
-                onClick={() =>
-                  onAction("CATCH_UNO", { targetPlayerId: vulnerablePlayer.id })
-                }
-                className="font-display inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-[#ffb4ce] bg-gradient-to-b from-[#ff72a0] to-[#d4245f] px-2.5 py-1.5 text-xs font-bold text-white shadow-[0_3px_0_#8f143e] transition hover:brightness-105 active:translate-y-0.5"
-              >
-                <AlertTriangleIcon className="h-3.5 w-3.5" />
-                Tangkap {vulnerablePlayer.nickname}!
-              </button>
-            )}
-          </div>
+            {vulnerablePlayer &&
+              vulnerablePlayer.id !== view.me.id &&
+              catchReadyForPlayerId === vulnerablePlayer.id && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAction("CATCH_UNO", { targetPlayerId: vulnerablePlayer.id });
+                  }}
+                  className="font-display pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-[#ffb4ce] bg-gradient-to-b from-[#ff72a0] to-[#d4245f] px-2.5 py-1.5 text-xs font-bold text-white shadow-[0_3px_0_#8f143e] transition hover:brightness-105 active:translate-y-0.5"
+                >
+                  <AlertTriangleIcon className="h-3.5 w-3.5" />
+                  DORRRR!
+                </button>
+              )}
 
-          {/* Bottom-Right Corner Overlay: Skip / Lewati Button (No ViewHeight Shift) */}
-          {view.me.canPass && (
-            <div
-              className={`absolute bottom-2.5 right-2.5 z-20 transition-opacity ${canPlaySelectedOnTable ? "opacity-35" : "opacity-100"}`}
-              onClick={(e) => e.stopPropagation()}
-            >
+            {view.me.canPass && (
               <motion.button
                 type="button"
-                animate={mustSkip ? { scale: [1, 1.07] } : { scale: 1 }}
+                animate={mustSkip ? { scale: [1, 1.12] } : { scale: 1 }}
                 transition={
                   mustSkip
                     ? {
-                        repeat: Infinity,
-                        repeatType: "mirror",
-                        duration: 0.9,
-                        ease: "easeInOut",
-                      }
+                      repeat: Infinity,
+                      repeatType: "mirror",
+                      duration: 0.9,
+                      ease: "easeInOut",
+                    }
                     : { duration: 0.15 }
                 }
                 whileTap={{ scale: 0.95 }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setSelectedCardId(null);
                   setPendingWildCardId(null);
                   onAction("PASS_TURN", {});
                 }}
                 className={[
-                  "font-display inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-white bg-gradient-to-b from-[#f4f7fa] to-[#d5dee6] px-3 py-1.5 text-xs font-bold text-[#3a424c] shadow-[0_3px_0_#8894a0] outline-none transition hover:brightness-105",
+                  "font-display pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-xl border-2 border-[#d5dce3] bg-gradient-to-b from-[#ffffff] to-[#eef2f6] px-3.5 py-1.5 text-xs font-bold text-[#3a424c] shadow-[0_3px_0_#9aa5b1] outline-none transition hover:brightness-105",
+                  canPlaySelectedOnTable ? "opacity-35" : "opacity-100",
                   mustSkip ? "ring-4 ring-[#ffe047]" : "",
                 ].join(" ")}
               >
                 <SkipForwardIcon className="h-3.5 w-3.5" />
                 Skip
               </motion.button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Wild Color Picker Overlay RIGHT ON TOP OF TABLE (No ViewHeight Shift) */}
           <AnimatePresence>
@@ -856,51 +955,16 @@ export function UnoBoard({
           </AnimatePresence>
         </div>
 
-        {/* Turn Status Banner (Fixed Single-Row Height) */}
+        {/* My Hand: Progressive Overlap + Dark Unplayable Colors + Dashed Turn Outline */}
         <div
           className={[
-            "mb-3 flex min-h-[38px] items-center justify-between gap-2 rounded-2xl border-2 px-3 py-1.5 text-xs font-extrabold transition",
-            view.pendingDraw > 0 && view.me.isMyTurn
-              ? "border-[#e0326a] bg-[#ffe3ec] text-[#8a123b]"
-              : view.me.isMyTurn
-                ? "border-[#e0326a] bg-[#fff7d6] text-[#5c1632]"
-                : "border-[#d8cfa3] bg-[#ebe4be] text-[#5c4e3d]",
+            "mb-4 rounded-2xl border-2 p-2.5 transition",
+            showHandTurnOutline
+              ? "border-transparent bg-[#f6ecd0] outline-3 outline-dashed -outline-offset-3 outline-[#e0326a]"
+              : "border-[#d8cfa3] bg-[#ebe4be]",
           ].join(" ")}
         >
-          <span className="truncate">
-            {view.me.isMyTurn
-              ? canPlaySelectedOnTable
-                ? "Ketuk meja di atas untuk memainkan kartu pilihanmu!"
-                : view.pendingDraw > 0
-                  ? `Penalti +${view.pendingDraw}! Tumpuk ${view.pendingDrawType === "wild4" ? "+4" : "+2/+4"} atau klik Deck.`
-                  : view.me.canPass
-                    ? view.me.playableCardIds.length > 0
-                      ? "Sudah ambil kartu — pilih kartu & ketuk meja, atau klik Skip."
-                      : "Tidak ada kartu cocok — klik Skip di pojok kanan meja."
-                    : view.me.playableCardIds.length > 0
-                      ? "Giliranmu! Klik kartu untuk angkat, lalu ketuk meja."
-                      : "Giliranmu! Tidak ada kartu cocok — klik Deck."
-              : currentTurnPlayer && onlineById?.[currentTurnPlayer.id] === false
-                ? `${currentTurnPlayer.nickname} sedang offline...`
-                : `Menunggu giliran ${currentTurnPlayer?.nickname ?? "..."}...`}
-          </span>
-          {remainingSec !== null && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#e0326a] px-2 py-0.5 text-[11px] text-white">
-              <ClockIcon className="h-3 w-3" /> {remainingSec}d
-            </span>
-          )}
-        </div>
-
-        {/* My Hand — Progressive Overlap + Solid Unplayable Colors */}
-        <div
-          className={[
-            "mb-4 rounded-2xl border-2 border-[#d8cfa3] p-2.5 outline-none transition",
-            view.me.isMyTurn
-              ? "bg-[#f6ecd0] ring-4 ring-[#ffe047]"
-              : "bg-[#ebe4be]",
-          ].join(" ")}
-        >
-          <div className="mb-1 flex items-center justify-between text-[11px] font-extrabold text-[#6e6049]">
+          <div className="relative z-0 mb-1 flex items-center justify-between text-[11px] font-extrabold text-[#6e6049]">
             <span>Kartu di Tanganmu ({view.me.hand.length})</span>
             <span className={view.me.isMyTurn ? "text-[#c72258]" : "text-[#8a7d63]"}>
               {view.me.isMyTurn
@@ -911,8 +975,8 @@ export function UnoBoard({
           <div
             ref={handBoxRef}
             className={[
-              "flex min-h-[136px] items-end overflow-x-auto px-1 pb-2 pt-7",
-              isCompactHand ? "justify-start" : "justify-center gap-2",
+              "relative z-10 -mt-5 flex items-end overflow-x-auto px-1 pb-1.5 pt-6",
+              isCompactHand ? "justify-start" : "justify-center gap-1",
             ].join(" ")}
           >
             {sortedHand.map((card, idx) => {
@@ -1003,7 +1067,7 @@ export function UnoBoard({
               className="fixed left-0 top-0 -ml-9 -mt-13 flex h-26 w-18 items-center justify-center rounded-xl border-[3px] border-[#3d1736] bg-gradient-to-b from-[#6540bb] to-[#3f2087] text-white shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
             >
               <span className="pointer-events-none absolute inset-1 rounded-[9px] border-2 border-white/40" />
-              <LayersIcon className="h-6 w-6" />
+              <UnoBackLogo compact />
             </motion.div>
           ))}
 

@@ -77,6 +77,8 @@ export interface UnoState extends BaseGameState {
   drawnPlayableCardId: string | null;
   /** Pemain dengan 1 kartu yang lupa menekan tombol UNO! (bisa ditangkap untuk +2) */
   unoVulnerablePlayerId: string | null;
+  /** Timestamp (ms) mulai kapan pemain lain boleh menangkap pemain yang lupa UNO! (delay 1 detik) */
+  unoCatchableAt: number | null;
   logs: UnoLogEntry[];
   winner: GameResult | null;
 }
@@ -102,6 +104,7 @@ export interface UnoPlayerView {
   turnOrder: string[];
   currentTurnPlayerId: string | null;
   unoVulnerablePlayerId: string | null;
+  unoCatchableAt: number | null;
   me: {
     id: string;
     hand: UnoCard[];

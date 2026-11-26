@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 interface GamePanelProps {
   title?: string;
+  ribbonContent?: ReactNode;
   ribbonColor?: "pink" | "cyan" | "purple";
   onClose?: () => void;
   children: ReactNode;
@@ -29,12 +30,14 @@ const RIBBON_THEMES = {
 
 export function GamePanel({
   title,
+  ribbonContent,
   ribbonColor = "pink",
   onClose,
   children,
   className = "",
 }: GamePanelProps) {
   const ribbon = RIBBON_THEMES[ribbonColor];
+  const hasRibbon = Boolean(title || ribbonContent);
 
   return (
     <div
@@ -43,7 +46,7 @@ export function GamePanel({
         className,
       ].join(" ")}
     >
-      {title && (
+      {hasRibbon && (
         <div className="relative -mx-4 mt-4 flex items-center justify-center">
           {/* Left folded ribbon wing */}
           <svg
@@ -66,14 +69,19 @@ export function GamePanel({
           {/* Main ribbon banner */}
           <div
             className={[
-              "relative z-10 flex w-full items-center justify-center rounded-xl border-b-[4px] bg-gradient-to-b px-12 py-2.5 shadow-[0_6px_12px_rgba(72,15,38,0.25)]",
+              "relative z-10 flex min-h-[52px] w-full items-center justify-center rounded-xl border-b-[4px] bg-gradient-to-b shadow-[0_6px_12px_rgba(72,15,38,0.25)]",
+              ribbonContent ? "px-4 py-2 sm:px-6" : "px-12 py-2.5",
               ribbon.main,
               ribbon.border,
             ].join(" ")}
           >
-            <h2 className="font-display game-title-stroke text-center text-2xl font-bold tracking-wide text-white sm:text-3xl">
-              {title}
-            </h2>
+            {ribbonContent ? (
+              ribbonContent
+            ) : (
+              <h2 className="font-display game-title-stroke text-center text-2xl font-bold tracking-wide text-white sm:text-3xl">
+                {title}
+              </h2>
+            )}
 
             {onClose && (
               <button

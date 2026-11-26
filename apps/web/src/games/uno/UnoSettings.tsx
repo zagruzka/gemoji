@@ -1,5 +1,5 @@
 import type { UnoConfig } from "@gemoji/game-uno";
-import { CheckIcon, InfinityIcon, LayersIcon } from "lucide-react";
+import { CheckIcon, InfinityIcon } from "lucide-react";
 
 interface UnoSettingsProps {
   config: UnoConfig;
@@ -44,10 +44,7 @@ export function UnoSettings({ config, isHost, onChange }: UnoSettingsProps) {
 
       {/* Kartu Awal */}
       <div>
-        <div className="mb-1.5 flex items-center gap-1 text-xs font-extrabold text-[#6e6049]">
-          <LayersIcon className="h-3.5 w-3.5" />
-          Kartu Awal
-        </div>
+        <div className="mb-1.5 text-xs font-extrabold text-[#6e6049]">Kartu Awal</div>
         <div className="grid grid-cols-2 gap-2">
           {HAND_SIZES.map((opt) => (
             <button

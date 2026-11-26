@@ -8,10 +8,18 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+export type GamePlayStyle = "team" | "ffa";
+
+export const GAME_PLAY_STYLE_LABEL: Record<GamePlayStyle, string> = {
+  team: "Tim",
+  ffa: "Lawan Semua",
+};
+
 export interface GameUiDescriptor {
   id: string;
   name: string;
   description: string;
+  playStyle: GamePlayStyle;
   minPlayers: number;
   maxPlayers: number;
   icon: LucideIcon;
@@ -23,7 +31,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "undercover",
     name: "Undercover",
-    description: "Tebak siapa penyusup lewat clue singkat — mode Library acak atau Custom Word 1 pasang/pemain!",
+    description:
+      "Cari tahu siapa penyusup di antara temanmu lewat petunjuk singkat. Bisa pakai kata acak atau buat kata sendiri!",
+    playStyle: "team",
     minPlayers: 3,
     maxPlayers: 12,
     icon: HatGlassesIcon,
@@ -33,7 +43,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "wordtrap",
     name: "Wordtrap",
-    description: "Adu tebak kata rahasia A–Z dengan Skill Trap huruf palsu dan rebutan tombol Tebak Kata!",
+    description:
+      "Tebak kata rahasia dari huruf yang terbuka, rebut kesempatan menjawab, dan kecoh lawan dengan huruf jebakan.",
+    playStyle: "ffa",
     minPlayers: 2,
     maxPlayers: 8,
     icon: KeyboardIcon,
@@ -43,7 +55,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "uno",
     name: "UNO",
-    description: "Kartu cepat real-time dengan +2/+4, Reverse, dan tombol teriak UNO!",
+    description:
+      "Adu cepat menghabiskan kartu dengan kombinasi warna, aksi Skip dan Reverse, tumpuk +2/+4, serta teriak UNO!",
+    playStyle: "ffa",
     minPlayers: 2,
     maxPlayers: 10,
     icon: PlayingCardsFanIcon,
@@ -53,7 +67,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "spaceteam",
     name: "Spaceteam",
-    description: "Kerja sama panik menekan tombol & tuas di layar teman sebelum pesawat meledak!",
+    description:
+      "Kerja sama di tengah kepanikan, tekan tombol sesuai instruksi teman sebelum pesawatmu meledak!",
+    playStyle: "team",
     minPlayers: 2,
     maxPlayers: 8,
     icon: RocketIcon,
@@ -63,7 +79,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "ludo",
     name: "Ludo",
-    description: "Balap 4 pion ke garis finish lewat lemparan dadu — makan pion lawan & rebut kemenangan!",
+    description:
+      "Lempar dadu dan balap 4 pion sampai garis akhir, lalu singkirkan pion lawan di sepanjang jalur.",
+    playStyle: "ffa",
     minPlayers: 2,
     maxPlayers: 4,
     icon: DicesIcon,
@@ -73,7 +91,9 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
   {
     id: "werewolf",
     name: "Werewolf",
-    description: "Aksi Malam rahasia dengan chat khusus Serigala, Penerawang, dan Pelindung.",
+    description:
+      "Bertahan hidup dari Serigala lewat aksi rahasia di malam hari dan diskusi penuh curiga saat siang.",
+    playStyle: "team",
     minPlayers: 5,
     maxPlayers: 16,
     icon: MoonIcon,

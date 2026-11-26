@@ -17,6 +17,8 @@ export const WordtrapConfigSchema = z.object({
   turnDurationSec: z
     .union([z.literal(0), z.literal(15), z.literal(20), z.literal(30)])
     .default(20),
+  /** Batas pemakaian Skill Trap per pemain tiap ronde */
+  trapLimit: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(1),
 });
 
 export type WordtrapConfig = z.infer<typeof WordtrapConfigSchema>;
@@ -27,7 +29,7 @@ export interface WordtrapPlayerInternal {
   avatar: AvatarId;
   score: number;
   eliminatedInRound: boolean;
-  trapUsedInRound: boolean;
+  trapsUsedInRound: number;
 }
 
 export interface ActiveTrap {
@@ -116,6 +118,8 @@ export interface WordtrapPlayerView {
     score: number;
     eliminatedInRound: boolean;
     trapUsedInRound: boolean;
+    trapsUsedInRound: number;
+    trapsRemainingInRound: number;
     isMyTurn: boolean;
     canUseTrap: boolean;
     canGuessWord: boolean;

@@ -24,7 +24,7 @@ export const unoGameModule: GameModule<UnoState, UnoAction, UnoConfig, UnoPlayer
     id: "uno",
     name: "UNO",
     description:
-      "Adu cepat habiskan kartu di tangan dengan +2/+4 stacking, Reverse, dan tombol teriak UNO!",
+      "Adu cepat menghabiskan kartu dengan kombinasi warna, aksi Skip dan Reverse, tumpuk +2/+4, serta teriak UNO!",
     minPlayers: 2,
     maxPlayers: 10,
     status: "available",

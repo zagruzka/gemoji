@@ -28,7 +28,8 @@ export const undercoverGameModule: GameModule<
   meta: {
     id: "undercover",
     name: "Undercover",
-    description: "Tebak siapa Undercover & Mr. Blank lewat clue singkat yang penuh curiga!",
+    description:
+      "Cari tahu siapa penyusup di antara temanmu lewat petunjuk singkat. Bisa pakai kata acak atau buat kata sendiri!",
     minPlayers: 3,
     maxPlayers: 12,
     status: "available",

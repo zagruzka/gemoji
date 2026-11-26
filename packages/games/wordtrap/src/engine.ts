@@ -132,7 +132,7 @@ function startNewRoundState(
   const resetPlayers: WordtrapPlayerInternal[] = prevState.players.map((p) => ({
     ...p,
     eliminatedInRound: false,
-    trapUsedInRound: false,
+    trapsUsedInRound: 0,
   }));
   const turnOrder = shuffle(
     resetPlayers.map((p) => p.id),
@@ -217,15 +217,15 @@ function advanceTurnAndTickTraps(
     if (trap.mode === "hidden") {
       msg = trap.actualInWord
         ? `Trap berakhir! Huruf "${trap.letter}" dari ${ownerName} adalah TRAP, namun memang ada di kata rahasia (tetap Hijau).`
-        : `Trap berakhir! Huruf "${trap.letter}" dari ${ownerName} ternyata adalah TRAP — berubah menjadi Merah!`;
+        : `Trap berakhir! Huruf "${trap.letter}" dari ${ownerName} ternyata adalah TRAP, berubah menjadi Merah!`;
     } else {
       const slotNum = (trap.slotIndex ?? 0) + 1;
       if (wasAlreadyGuessed) {
         msg = `Trap berakhir! Huruf palsu "${trap.letter}" di slot #${slotNum} dari ${ownerName} adalah TRAP dan kini menghilang.`;
       } else if (trap.actualInWord) {
-        msg = `Trap berakhir! Huruf "${trap.letter}" di slot #${slotNum} dari ${ownerName} adalah TRAP — huruf aslinya kini terbuka di posisi sebenarnya (Hijau).`;
+        msg = `Trap berakhir! Huruf "${trap.letter}" di slot #${slotNum} dari ${ownerName} adalah TRAP. Huruf aslinya kini terbuka di posisi sebenarnya (Hijau).`;
       } else {
-        msg = `Trap berakhir! Huruf palsu "${trap.letter}" di slot #${slotNum} dari ${ownerName} adalah TRAP — berubah menjadi Merah!`;
+        msg = `Trap berakhir! Huruf palsu "${trap.letter}" di slot #${slotNum} dari ${ownerName} adalah TRAP, berubah menjadi Merah!`;
       }
     }
 
@@ -296,7 +296,7 @@ export function initWordtrap(
     avatar: p.avatar,
     score: 0,
     eliminatedInRound: false,
-    trapUsedInRound: false,
+    trapsUsedInRound: 0,
   }));
 
   const turnOrder = shuffle(
@@ -323,7 +323,7 @@ export function initWordtrap(
       makeLog(
         1,
         "round_end",
-        `Ronde 1 dimulai! Tebak kata rahasia (${secretWord.length} huruf) — Mode ${config.mode === "reveal" ? "Reveal" : "Hidden"}.`,
+        `Ronde 1 dimulai! Tebak kata rahasia (${secretWord.length} huruf), Mode ${config.mode === "reveal" ? "Reveal" : "Hidden"}.`,
         context.now,
         0,
       ),
@@ -360,7 +360,9 @@ export function validateWordtrapAction(
       if (player.eliminatedInRound) return "Kamu sudah tereliminasi di ronde ini";
       const currentPlayerId = state.turnOrder[state.currentTurnIndex];
       if (currentPlayerId !== playerId) return "Skill Trap hanya bisa dipakai saat giliranmu";
-      if (player.trapUsedInRound) return "Skill Trap hanya bisa dipakai 1x per ronde";
+      if (player.trapsUsedInRound >= state.config.trapLimit) {
+        return `Skill Trap maksimal ${state.config.trapLimit}x per ronde`;
+      }
 
       const { letter, slotIndex } = action.data;
 
@@ -505,7 +507,7 @@ export function reduceWordtrap(
         makeLog(
           state.round,
           "letter",
-          `${actorName} memilih huruf "${letter}" (${isHit ? "Hijau — ada di kata!" : "Merah — tidak ada"}).`,
+          `${actorName} memilih huruf "${letter}" (${isHit ? "Hijau: ada di kata!" : "Merah: tidak ada"}).`,
           now,
           0,
         ),
@@ -563,14 +565,14 @@ export function reduceWordtrap(
       };
 
       const updatedPlayers = state.players.map((p) =>
-        p.id === playerId ? { ...p, trapUsedInRound: true } : p,
+        p.id === playerId ? { ...p, trapsUsedInRound: p.trapsUsedInRound + 1 } : p,
       );
 
       // Log publik sengaja tampil seperti pilihan huruf hijau biasa agar trap tidak langsung ketahuan!
       const disguiseLog = makeLog(
         state.round,
         "letter",
-        `${actorName} memilih huruf "${letter}" (Hijau — ada di kata!).`,
+        `${actorName} memilih huruf "${letter}" (Hijau: ada di kata!).`,
         now,
         0,
       );
@@ -691,7 +693,7 @@ export function onWordtrapTimeout(
   if (state.phase === "PLAYING") {
     const currentPlayerId = state.turnOrder[state.currentTurnIndex];
     const name = currentPlayerId ? getPlayerNickname(state.players, currentPlayerId) : "Pemain";
-    const msg = `Waktu giliran ${name} habis — giliran dilewati.`;
+    const msg = `Waktu giliran ${name} habis, giliran dilewati.`;
     return advanceTurnAndTickTraps(
       state,
       now,
@@ -775,6 +777,8 @@ export function getWordtrapPlayerView(
   const myActiveTrapRaw = !revealAll
     ? state.activeTraps.find((t) => t.ownerId === playerId) ?? null
     : null;
+  const trapsUsedInRound = me?.trapsUsedInRound ?? state.config.trapLimit;
+  const trapsRemainingInRound = Math.max(0, state.config.trapLimit - trapsUsedInRound);
 
   return {
     phase: state.phase,
@@ -787,9 +791,11 @@ export function getWordtrapPlayerView(
       id: playerId,
       score: me?.score ?? 0,
       eliminatedInRound: me?.eliminatedInRound ?? true,
-      trapUsedInRound: me?.trapUsedInRound ?? true,
+      trapUsedInRound: trapsRemainingInRound <= 0,
+      trapsUsedInRound,
+      trapsRemainingInRound,
       isMyTurn,
-      canUseTrap: isMyTurn && !(me?.trapUsedInRound ?? true) && hasEmptyRevealSlot,
+      canUseTrap: isMyTurn && trapsRemainingInRound > 0 && hasEmptyRevealSlot,
       canGuessWord: state.phase === "PLAYING" && !(me?.eliminatedInRound ?? true),
       myActiveTrap: myActiveTrapRaw
         ? {

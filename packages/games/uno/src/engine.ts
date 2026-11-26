@@ -20,6 +20,7 @@ import {
 } from "./state";
 
 const MAX_LOGS = 30;
+export const UNO_CATCH_DELAY_MS = 1000;
 const NUMBER_VALUES: readonly UnoCardValue[] = [
   "0",
   "1",
@@ -233,6 +234,7 @@ export function initUno(
     pendingDrawType: null,
     drawnPlayableCardId: null,
     unoVulnerablePlayerId: null,
+    unoCatchableAt: null,
     logs: [
       makeLog(
         "system",
@@ -278,7 +280,7 @@ export function validateUnoAction(
     case "DRAW_CARD": {
       if (currentPlayerId !== playerId) return "Belum giliranmu bermain";
       if (state.drawnPlayableCardId !== null) {
-        return "Kamu sudah mengambil kartu — mainkan kartu tersebut atau klik Lewati";
+        return "Kamu sudah mengambil kartu. Mainkan kartu yang cocok atau klik Skip";
       }
       return null;
     }
@@ -292,14 +294,12 @@ export function validateUnoAction(
     }
 
     case "CALL_UNO": {
-      const canPreDeclare = currentPlayerId === playerId && player.hand.length === 2;
       const canSaveSelf =
-        player.hand.length === 1 && state.unoVulnerablePlayerId === playerId;
-      if (!canPreDeclare && !canSaveSelf) {
-        return "Tombol UNO! hanya bisa ditekan saat menyisakan 1–2 kartu";
-      }
-      if (player.unoDeclared && state.unoVulnerablePlayerId !== playerId) {
-        return "Kamu sudah meneriakkan UNO!";
+        player.hand.length === 1 &&
+        state.unoVulnerablePlayerId === playerId &&
+        !player.unoDeclared;
+      if (!canSaveSelf) {
+        return "Tombol UNO! hanya bisa ditekan saat kartu tersisa 1";
       }
       return null;
     }
@@ -332,12 +332,15 @@ export function reduceUno(
       );
       const nextVulnerable =
         state.unoVulnerablePlayerId === playerId ? null : state.unoVulnerablePlayerId;
+      const nextCatchableAt =
+        nextVulnerable === null ? null : state.unoCatchableAt;
       const msg = `${actorName} berteriak "UNO!"`;
       return {
         state: {
           ...state,
           players: updatedPlayers,
           unoVulnerablePlayerId: nextVulnerable,
+          unoCatchableAt: nextCatchableAt,
           logs: appendLogs(state.logs, [makeLog("uno", msg, now, 0)]),
         },
         systemMessages: [{ channel: "public", content: msg }],
@@ -345,6 +348,9 @@ export function reduceUno(
     }
 
     case "CATCH_UNO": {
+      if (state.unoCatchableAt !== null && now < state.unoCatchableAt) {
+        return { state };
+      }
       const targetId = action.data.targetPlayerId;
       const targetName = getPlayerNickname(state.players, targetId);
       const drawRes = drawCards(state.drawPile, state.discardPile, 2, rng);
@@ -361,6 +367,7 @@ export function reduceUno(
           drawPile: drawRes.drawPile,
           discardPile: drawRes.discardPile,
           unoVulnerablePlayerId: null,
+          unoCatchableAt: null,
           logs: appendLogs(state.logs, [makeLog("catch", msg, now, 0)]),
         },
         systemMessages: [{ channel: "public", content: msg }],
@@ -405,6 +412,7 @@ export function reduceUno(
         logs.push(makeLog("draw", msg, now, seq++));
         sysMsgs.push({ channel: "public", content: msg });
 
+        const clearVulnerable = state.unoVulnerablePlayerId === playerId;
         return {
           state: {
             ...state,
@@ -416,7 +424,8 @@ export function reduceUno(
             pendingDraw: 0,
             pendingDrawType: null,
             drawnPlayableCardId: null,
-            unoVulnerablePlayerId: null,
+            unoVulnerablePlayerId: clearVulnerable ? null : state.unoVulnerablePlayerId,
+            unoCatchableAt: clearVulnerable ? null : state.unoCatchableAt,
             logs: appendLogs(state.logs, logs),
           },
           systemMessages: sysMsgs,
@@ -437,16 +446,18 @@ export function reduceUno(
       );
 
       if (drawRes.reshuffled) {
-        logs.push(makeLog("system", "Deck habis — tumpukan buang dikocok ulang!", now, seq++));
+        logs.push(makeLog("system", "Deck habis, tumpukan buang dikocok ulang!", now, seq++));
       }
 
+      const clearVulnerable = state.unoVulnerablePlayerId === playerId;
       const tempState: UnoState = {
         ...state,
         players: updatedPlayers,
         drawPile: drawRes.drawPile,
         discardPile: drawRes.discardPile,
         drawnPlayableCardId: null,
-        unoVulnerablePlayerId: null,
+        unoVulnerablePlayerId: clearVulnerable ? null : state.unoVulnerablePlayerId,
+        unoCatchableAt: clearVulnerable ? null : state.unoCatchableAt,
       };
 
       // Selalu tetap di giliran pemain setelah ambil 1 kartu agar lawan tidak bisa menebak
@@ -516,16 +527,13 @@ export function reduceUno(
             pendingDrawType: null,
             drawnPlayableCardId: null,
             unoVulnerablePlayerId: null,
+            unoCatchableAt: null,
             winner,
             logs: appendLogs(state.logs, logs),
           },
           systemMessages: sysMsgs,
         };
       }
-
-      // Cek status lupa teriak UNO (saat turun ke 1 kartu tanpa menekan UNO!)
-      const nextUnoVulnerable =
-        remainingHand.length === 1 && !player.unoDeclared ? playerId : null;
 
       // Efek kartu spesial
       const playerCount = state.turnOrder.length;
@@ -575,6 +583,20 @@ export function reduceUno(
         nextTurnIdx = nextIndex(state.currentTurnIndex, nextDirection, playerCount, 1);
       }
 
+      // Cek status lupa teriak UNO (hanya aktif setelah kartu tersisa 1; lawan boleh tangkap setelah 2 detik)
+      let nextUnoVulnerable: string | null = null;
+      let nextUnoCatchableAt: number | null = null;
+      if (remainingHand.length === 1) {
+        nextUnoVulnerable = playerId;
+        nextUnoCatchableAt = now + UNO_CATCH_DELAY_MS;
+      } else if (state.unoVulnerablePlayerId) {
+        const existingVuln = updatedPlayers.find((p) => p.id === state.unoVulnerablePlayerId);
+        if (existingVuln && existingVuln.hand.length === 1 && !existingVuln.unoDeclared) {
+          nextUnoVulnerable = existingVuln.id;
+          nextUnoCatchableAt = state.unoCatchableAt;
+        }
+      }
+
       return {
         state: {
           ...state,
@@ -589,6 +611,7 @@ export function reduceUno(
           pendingDrawType: nextPendingDrawType,
           drawnPlayableCardId: null,
           unoVulnerablePlayerId: nextUnoVulnerable,
+          unoCatchableAt: nextUnoCatchableAt,
           logs: appendLogs(state.logs, logs),
         },
         systemMessages: sysMsgs.length > 0 ? sysMsgs : undefined,
@@ -611,7 +634,7 @@ export function onUnoTimeout(
   // Jika sebelumnya sudah draw kartu valid lalu AFK -> langsung pass turn
   if (state.drawnPlayableCardId !== null) {
     const nextIdx = nextIndex(state.currentTurnIndex, state.direction, state.turnOrder.length, 1);
-    const msg = `Waktu ${actorName} habis — giliran dilewati.`;
+    const msg = `Waktu ${actorName} habis, giliran dilewati.`;
     return {
       state: {
         ...state,
@@ -633,8 +656,9 @@ export function onUnoTimeout(
       : p,
   );
   const nextIdx = nextIndex(state.currentTurnIndex, state.direction, state.turnOrder.length, 1);
-  const msg = `Waktu ${actorName} habis — otomatis ambil +${drawRes.drawn.length} kartu.`;
+  const msg = `Waktu ${actorName} habis, otomatis ambil +${drawRes.drawn.length} kartu.`;
 
+  const clearVulnerable = state.unoVulnerablePlayerId === currentPlayerId;
   return {
     state: {
       ...state,
@@ -646,7 +670,8 @@ export function onUnoTimeout(
       pendingDraw: 0,
       pendingDrawType: null,
       drawnPlayableCardId: null,
-      unoVulnerablePlayerId: null,
+      unoVulnerablePlayerId: clearVulnerable ? null : state.unoVulnerablePlayerId,
+      unoCatchableAt: clearVulnerable ? null : state.unoCatchableAt,
       logs: appendLogs(state.logs, [makeLog("timeout", msg, now, 0)]),
     },
     systemMessages: [{ channel: "public", content: msg }],
@@ -664,11 +689,13 @@ export function getUnoPlayerView(state: UnoState, playerId: string): UnoPlayerVi
     ? myHand.filter((c) => isCardPlayable(state, c)).map((c) => c.id)
     : [];
 
+  // Tombol UNO! hanya muncul setelah kartu tersisa 1
   const canCallUno =
     state.phase === "PLAYING" &&
     Boolean(me) &&
-    ((isMyTurn && myHand.length === 2 && !me!.unoDeclared) ||
-      (myHand.length === 1 && state.unoVulnerablePlayerId === playerId));
+    myHand.length === 1 &&
+    state.unoVulnerablePlayerId === playerId &&
+    !me!.unoDeclared;
 
   return {
     phase: state.phase,
@@ -682,6 +709,7 @@ export function getUnoPlayerView(state: UnoState, playerId: string): UnoPlayerVi
     turnOrder: state.turnOrder,
     currentTurnPlayerId,
     unoVulnerablePlayerId: state.unoVulnerablePlayerId,
+    unoCatchableAt: state.unoCatchableAt,
     me: {
       id: playerId,
       hand: myHand,

@@ -143,7 +143,13 @@ describe("uno game engine", () => {
       ),
     };
 
-    // p1 plays blue Reverse without calling UNO -> stays p1's turn (2-player skip) AND p1 is vulnerable!
+    // With 2 cards left, CALL_UNO is NOT available yet
+    expect(unoGameModule.getPlayerView(state, p1).me.canCallUno).toBe(false);
+    expect(
+      unoGameModule.validateAction(state, p1, { actionType: "CALL_UNO", data: {} }),
+    ).not.toBeNull();
+
+    // p1 plays blue Reverse -> drops to 1 card: stays p1's turn (2-player skip), UNO! unlocks, catch delayed 1s
     state = unoGameModule.reduce(
       state,
       p1,
@@ -153,16 +159,29 @@ describe("uno game engine", () => {
 
     expect(state.turnOrder[state.currentTurnIndex]).toBe(p1);
     expect(state.unoVulnerablePlayerId).toBe(p1);
+    expect(state.unoCatchableAt).toBe(3000);
+    expect(unoGameModule.getPlayerView(state, p1).me.canCallUno).toBe(true);
 
-    // p2 catches p1 before p1 plays last card -> p1 receives +2 penalty cards!
+    // p2 tries catching before 1s delay (at 2500ms) -> ignored
     state = unoGameModule.reduce(
       state,
       p2,
       { actionType: "CATCH_UNO", data: { targetPlayerId: p1 } },
       2500,
     ).state;
+    expect(state.unoVulnerablePlayerId).toBe(p1);
+    expect(state.players.find((p) => p.id === p1)!.hand.length).toBe(1);
+
+    // p2 catches p1 after 1s delay (at 3000ms) -> p1 receives +2 penalty cards!
+    state = unoGameModule.reduce(
+      state,
+      p2,
+      { actionType: "CATCH_UNO", data: { targetPlayerId: p1 } },
+      3000,
+    ).state;
 
     expect(state.unoVulnerablePlayerId).toBeNull();
+    expect(state.unoCatchableAt).toBeNull();
     expect(state.players.find((p) => p.id === p1)!.hand.length).toBe(3);
   });
 

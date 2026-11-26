@@ -29,7 +29,7 @@ export const wordtrapGameModule: GameModule<
     id: "wordtrap",
     name: "Wordtrap",
     description:
-      "Tebak kata rahasia lewat keyboard A–Z, rebutan tombol Tebak Kata (30d), dan jebak lawan dengan Skill Trap!",
+      "Tebak kata rahasia dari huruf yang terbuka, rebut kesempatan menjawab, dan kecoh lawan dengan huruf jebakan.",
     minPlayers: 2,
     maxPlayers: 8,
     status: "available",

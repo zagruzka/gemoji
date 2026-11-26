@@ -1,5 +1,5 @@
 import type { WordtrapConfig } from "@gemoji/game-wordtrap";
-import { EyeIcon, EyeOffIcon, InfinityIcon, TrophyIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, InfinityIcon } from "lucide-react";
 
 interface WordtrapSettingsProps {
   config: WordtrapConfig;
@@ -11,6 +11,12 @@ const TARGET_POINTS: Array<{ value: WordtrapConfig["targetPoints"]; label: strin
   { value: 2, label: "2 Poin" },
   { value: 3, label: "3 Poin" },
   { value: 5, label: "5 Poin" },
+];
+
+const TRAP_LIMITS: Array<{ value: WordtrapConfig["trapLimit"]; label: string }> = [
+  { value: 1, label: "1x" },
+  { value: 2, label: "2x" },
+  { value: 3, label: "3x" },
 ];
 
 const TURN_DURATIONS: Array<{ value: WordtrapConfig["turnDurationSec"]; label: string }> = [
@@ -75,10 +81,7 @@ export function WordtrapSettings({ config, isHost, onChange }: WordtrapSettingsP
 
       {/* Target Poin */}
       <div>
-        <div className="mb-1.5 flex items-center gap-1 text-xs font-extrabold text-[#6e6049]">
-          <TrophyIcon className="h-3.5 w-3.5" />
-          Target Menang
-        </div>
+        <div className="mb-1.5 text-xs font-extrabold text-[#6e6049]">Target Menang</div>
         <div className="grid grid-cols-3 gap-1.5">
           {TARGET_POINTS.map((opt) => (
             <button
@@ -87,6 +90,24 @@ export function WordtrapSettings({ config, isHost, onChange }: WordtrapSettingsP
               disabled={!isHost}
               onClick={() => onChange({ targetPoints: opt.value })}
               className={pillBtn(config.targetPoints === opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Limit Trap */}
+      <div>
+        <div className="mb-1.5 text-xs font-extrabold text-[#6e6049]">Limit Trap / Ronde</div>
+        <div className="grid grid-cols-3 gap-1.5">
+          {TRAP_LIMITS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              disabled={!isHost}
+              onClick={() => onChange({ trapLimit: opt.value })}
+              className={pillBtn(config.trapLimit === opt.value)}
             >
               {opt.label}
             </button>

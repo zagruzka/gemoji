@@ -565,7 +565,7 @@ export function UndercoverBoard({
 
           {!view.me.alive && (
             <div className="mb-4 rounded-2xl border-2 border-[#c8bf94] bg-[#ebe4be] p-3 text-center text-xs font-extrabold text-[#6e6049]">
-              Kamu sudah tereliminasi — tonton hasil voting dari kursi penonton.
+              Kamu sudah tereliminasi. Tonton hasil voting dari kursi penonton.
             </div>
           )}
 
@@ -825,7 +825,7 @@ export function UndercoverBoard({
           <div className="mb-4 rounded-2xl border-2 border-[#a982f5] bg-[#f4ecff] px-3 py-2 text-center text-xs font-extrabold text-[#5828b5]">
             {view.customPoolRemaining > 0
               ? `Pool Custom Word masih tersisa ${view.customPoolRemaining} pasang kata untuk ronde berikutnya!`
-              : "Semua pasangan Custom Word sudah terpakai — ronde berikutnya semua pemain input 1 pasang kata baru!"}
+              : "Semua pasangan Custom Word sudah terpakai. Ronde berikutnya, semua pemain mengisi 1 pasang kata baru!"}
           </div>
         )}
 

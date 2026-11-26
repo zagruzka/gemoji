@@ -26,7 +26,8 @@ const UPCOMING_GAMES: GameMeta[] = [
   {
     id: "spaceteam",
     name: "Spaceteam",
-    description: "Kerja sama panik menekan tombol & tuas di layar teman sebelum pesawat meledak!",
+    description:
+      "Kerja sama di tengah kepanikan, tekan tombol sesuai instruksi teman sebelum pesawatmu meledak!",
     minPlayers: 2,
     maxPlayers: 8,
     status: "coming_soon",
@@ -34,7 +35,8 @@ const UPCOMING_GAMES: GameMeta[] = [
   {
     id: "ludo",
     name: "Ludo",
-    description: "Balap 4 pion ke garis finish lewat lemparan dadu — makan pion lawan & rebut kemenangan!",
+    description:
+      "Lempar dadu dan balap 4 pion sampai garis akhir, lalu singkirkan pion lawan di sepanjang jalur.",
     minPlayers: 2,
     maxPlayers: 4,
     status: "coming_soon",
@@ -42,7 +44,8 @@ const UPCOMING_GAMES: GameMeta[] = [
   {
     id: "werewolf",
     name: "Werewolf",
-    description: "Bertahan hidup dari Serigala lewat fase Malam penuh intrik & diskusi Siang!",
+    description:
+      "Bertahan hidup dari Serigala lewat aksi rahasia di malam hari dan diskusi penuh curiga saat siang.",
     minPlayers: 5,
     maxPlayers: 16,
     status: "coming_soon",

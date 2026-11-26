@@ -9,7 +9,7 @@ import {
   RotateCcwIcon,
   SendIcon,
   SkullIcon,
-  LightbulbIcon,
+  SquareLetterTIcon,
   TrophyIcon,
   ZapIcon,
 } from "lucide-react";
@@ -192,8 +192,8 @@ export function WordtrapBoard({
               {roundWinner
                 ? `🎉 ${roundWinner.nickname} menebak dengan benar dan mendapat +1 poin!`
                 : view.lastRoundResult?.reason === "all_eliminated"
-                  ? "Semua pemain tereliminasi — tidak ada poin di ronde ini."
-                  : "Semua huruf habis terbuka — tidak ada poin di ronde ini."}
+                  ? "Semua pemain tereliminasi, tidak ada poin di ronde ini."
+                  : "Semua huruf sudah terbuka, tidak ada poin di ronde ini."}
             </p>
           </div>
 
@@ -352,7 +352,7 @@ export function WordtrapBoard({
 
           {view.config.mode === "hidden" && (
             <p className="mt-2.5 text-center text-[11px] font-bold text-[#786b51]">
-              Mode Hidden: huruf benar tidak dibuka di slot — susun dari huruf Hijau di keyboard!
+              Mode Hidden: huruf benar tidak dibuka di slot, susun dari huruf Hijau di keyboard!
             </p>
           )}
         </div>
@@ -360,7 +360,7 @@ export function WordtrapBoard({
         {/* Private Owner Trap Indicator (ONLY visible to trap creator) */}
         {view.me.myActiveTrap && (
           <div className="mb-3 flex items-center justify-center gap-1.5 rounded-xl border-2 border-[#a982f5] bg-[#f4ecff] px-3 py-1.5 text-xs font-extrabold text-[#5828b5]">
-            <LightbulbIcon className="h-3.5 w-3.5 shrink-0" />
+            <SquareLetterTIcon className="h-3.5 w-3.5 shrink-0" />
             <span>
               Trap aktifmu: huruf &ldquo;{view.me.myActiveTrap.letter}&rdquo;
               {view.me.myActiveTrap.slotIndex !== null
@@ -440,7 +440,7 @@ export function WordtrapBoard({
             >
               <span>
                 {view.me.eliminatedInRound
-                  ? "Kamu tereliminasi di ronde ini — tunggu ronde berikutnya."
+                  ? "Kamu tereliminasi di ronde ini, tunggu ronde berikutnya."
                   : view.me.isMyTurn
                     ? trapMode
                       ? "Mode Skill Trap Aktif!"
@@ -463,7 +463,7 @@ export function WordtrapBoard({
                   ? selectedSlot === null
                     ? "Langkah 1: Ketuk 1 slot kosong di atas untuk dipasangi huruf palsu."
                     : `Langkah 2: Pilih 1 huruf palsu di keyboard untuk dipasang di slot #${selectedSlot + 1}!`
-                  : "Pilih 1 huruf belum terpakai di keyboard — akan tampil HIJAU bagi semua pemain selama 1 putaran!"}
+                  : "Pilih 1 huruf yang belum terpakai di keyboard. Huruf ini akan tampil HIJAU bagi semua pemain selama 1 putaran!"}
               </div>
             )}
           </>
@@ -537,19 +537,21 @@ export function WordtrapBoard({
               variant={trapMode ? "pink" : "cyan"}
               size="sm"
               className="shrink-0"
-              title="Pakai Skill Trap (1x/ronde)"
+              title={`Pakai Skill Trap (sisa ${view.me.trapsRemainingInRound}/${view.config.trapLimit} ronde ini)`}
               disabled={!view.me.canUseTrap}
               onClick={() => {
                 setTrapMode((prev) => !prev);
                 setSelectedSlot(null);
               }}
             >
-              <LightbulbIcon className="h-4 w-4 shrink-0" />
+              <SquareLetterTIcon className="h-4 w-4 shrink-0" />
               {view.me.trapUsedInRound
                 ? "Habis"
                 : trapMode
                   ? "Batal"
-                  : "Trap"}
+                  : view.config.trapLimit > 1
+                    ? `Trap (${view.me.trapsRemainingInRound})`
+                    : "Trap"}
             </GameButton>
           </div>
         )}

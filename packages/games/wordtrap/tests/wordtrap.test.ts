@@ -281,4 +281,76 @@ describe("wordtrap game engine", () => {
     expect(state.phase).toBe("GAME_OVER");
     expect(state.winner?.winnerPlayerIds).toEqual([pA]);
   });
+
+  test("trapLimit config defaults to 1 and supports 2 or 3 traps per round", () => {
+    const defaultConfig = wordtrapGameModule.parseConfig({});
+    expect(defaultConfig.trapLimit).toBe(1);
+
+    const players = makePlayers(2);
+    const config = wordtrapGameModule.parseConfig({
+      mode: "hidden",
+      targetPoints: 3,
+      turnDurationSec: 20,
+      trapLimit: 2,
+    });
+
+    let state = wordtrapGameModule.init(players, config, {
+      now: 1000,
+      rng: createSeededRng(9),
+      libraryWords: ["MANGGA"],
+    });
+
+    const [pA, pB] = state.turnOrder as [string, string];
+
+    // Trap #1 by pA
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapsRemainingInRound).toBe(2);
+    state = wordtrapGameModule.reduce(
+      state,
+      pA,
+      { actionType: "USE_TRAP", data: { letter: "Z" } },
+      2000,
+    ).state;
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapsUsedInRound).toBe(1);
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapsRemainingInRound).toBe(1);
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapUsedInRound).toBe(false);
+
+    // pB picks normal letter -> turn returns to pA
+    state = wordtrapGameModule.reduce(
+      state,
+      pB,
+      { actionType: "PICK_LETTER", data: { letter: "M" } },
+      3000,
+    ).state;
+
+    // Trap #2 by pA is allowed
+    expect(
+      wordtrapGameModule.validateAction(state, pA, {
+        actionType: "USE_TRAP",
+        data: { letter: "X" },
+      }),
+    ).toBeNull();
+    state = wordtrapGameModule.reduce(
+      state,
+      pA,
+      { actionType: "USE_TRAP", data: { letter: "X" } },
+      4000,
+    ).state;
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapsRemainingInRound).toBe(0);
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.trapUsedInRound).toBe(true);
+
+    // pB picks normal letter -> turn returns to pA -> Trap #3 is blocked!
+    state = wordtrapGameModule.reduce(
+      state,
+      pB,
+      { actionType: "PICK_LETTER", data: { letter: "A" } },
+      5000,
+    ).state;
+    expect(wordtrapGameModule.getPlayerView(state, pA).me.canUseTrap).toBe(false);
+    expect(
+      wordtrapGameModule.validateAction(state, pA, {
+        actionType: "USE_TRAP",
+        data: { letter: "Q" },
+      }),
+    ).not.toBeNull();
+  });
 });
