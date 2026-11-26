@@ -1,4 +1,4 @@
-export type BackdropTheme = "arcade" | "night" | "uno";
+export type BackdropTheme = "arcade" | "night" | "uno" | "space";
 
 interface LowPolyBackgroundProps {
   theme?: BackdropTheme;
@@ -16,6 +16,10 @@ const PALETTES: Record<BackdropTheme, { base: string; facets: string[] }> = {
   uno: {
     base: "#c94b4b",
     facets: ["#e05d4f", "#d1495b", "#ed7b49", "#b53f52", "#de6948", "#c24354", "#eb8a44", "#a8384c"],
+  },
+  space: {
+    base: "#070b18",
+    facets: ["#0d1530", "#0a1024", "#131e42", "#070c1b", "#101938", "#0b132b", "#172550", "#050814"],
   },
 };
 

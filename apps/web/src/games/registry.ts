@@ -73,7 +73,7 @@ export const GAME_UI_CATALOG: readonly GameUiDescriptor[] = [
     minPlayers: 2,
     maxPlayers: 8,
     icon: RocketIcon,
-    status: "coming_soon",
+    status: "available",
     accent: "yellow",
   },
   {

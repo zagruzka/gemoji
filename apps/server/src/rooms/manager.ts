@@ -14,6 +14,7 @@ const MAX_CHAT_HISTORY = 100;
 const CHAT_RATE_LIMIT_MAX = 5;
 const CHAT_RATE_LIMIT_WINDOW_MS = 5_000;
 const DEFAULT_EMPTY_ROOM_TTL_MS = 3 * 60 * 1000; // 3 menit kosong -> tutup room otomatis
+const DEFAULT_DISCONNECT_GRACE_MS = 3_500; // 3.5 detik grace period agar refresh halaman tidak dianggap offline
 
 export interface ClientSocketSink {
   send(message: ServerMessage): void;
@@ -21,14 +22,17 @@ export interface ClientSocketSink {
 
 export interface RoomManagerOptions {
   emptyRoomTtlMs?: number;
+  disconnectGraceMs?: number;
 }
 
 export class RoomManager {
   private readonly socketsByRoom = new Map<string, Map<string, ClientSocketSink>>();
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly shutdownTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly disconnectTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly chatTimestampsByPlayer = new Map<string, number[]>();
   private readonly emptyRoomTtlMs: number;
+  private readonly disconnectGraceMs: number;
 
   constructor(
     private readonly store: RoomStore,
@@ -36,6 +40,20 @@ export class RoomManager {
     options?: RoomManagerOptions,
   ) {
     this.emptyRoomTtlMs = options?.emptyRoomTtlMs ?? DEFAULT_EMPTY_ROOM_TTL_MS;
+    this.disconnectGraceMs = options?.disconnectGraceMs ?? DEFAULT_DISCONNECT_GRACE_MS;
+  }
+
+  private disconnectKey(roomCode: string, playerId: string): string {
+    return `${roomCode}:${playerId}`;
+  }
+
+  private cancelDisconnectTimer(roomCode: string, playerId: string): void {
+    const key = this.disconnectKey(roomCode, playerId);
+    const existing = this.disconnectTimers.get(key);
+    if (existing) {
+      clearTimeout(existing);
+      this.disconnectTimers.delete(key);
+    }
   }
 
   private cancelShutdownTimer(roomCode: string): void {
@@ -48,6 +66,13 @@ export class RoomManager {
 
   private shutdownRoom(roomCode: string): void {
     this.cancelShutdownTimer(roomCode);
+    const prefix = `${roomCode}:`;
+    for (const [key, timer] of this.disconnectTimers.entries()) {
+      if (key.startsWith(prefix)) {
+        clearTimeout(timer);
+        this.disconnectTimers.delete(key);
+      }
+    }
     const phaseTimer = this.timers.get(roomCode);
     if (phaseTimer) {
       clearTimeout(phaseTimer);
@@ -300,6 +325,7 @@ export class RoomManager {
       existing.avatar = avatar;
     }
 
+    this.cancelDisconnectTimer(room.roomCode, playerId);
     this.getRoomSockets(room.roomCode).set(playerId, sink);
     this.syncShutdownTimer(room);
     room.updatedAt = Date.now();
@@ -344,10 +370,41 @@ export class RoomManager {
     return { ok: true, isHost: room.hostId === playerId };
   }
 
-  handleDisconnect(roomCode: string, playerId: string): void {
+  handleDisconnect(
+    roomCode: string,
+    playerId: string,
+    disconnectedSink?: ClientSocketSink,
+  ): void {
     const room = this.getRoom(roomCode);
     if (!room) return;
-    this.socketsByRoom.get(room.roomCode)?.delete(playerId);
+
+    const sockets = this.socketsByRoom.get(room.roomCode);
+    if (disconnectedSink && sockets?.get(playerId) !== disconnectedSink) {
+      // Koneksi baru hasil refresh sudah menggantikan socket lama -> abaikan close dari socket lama
+      return;
+    }
+    sockets?.delete(playerId);
+
+    if (this.disconnectGraceMs <= 0) {
+      this.finalizeDisconnect(room.roomCode, playerId);
+      return;
+    }
+
+    this.cancelDisconnectTimer(room.roomCode, playerId);
+    const key = this.disconnectKey(room.roomCode, playerId);
+    const timer = setTimeout(() => {
+      this.disconnectTimers.delete(key);
+      this.finalizeDisconnect(room.roomCode, playerId);
+    }, this.disconnectGraceMs);
+    timer.unref?.();
+    this.disconnectTimers.set(key, timer);
+  }
+
+  private finalizeDisconnect(roomCode: string, playerId: string): void {
+    const room = this.getRoom(roomCode);
+    if (!room) return;
+    // Jika pemain sudah tersambung ulang selama grace period (misal refresh halaman), jangan tandai offline
+    if (this.socketsByRoom.get(room.roomCode)?.has(playerId)) return;
 
     const player = room.players.find((p) => p.id === playerId);
     const wasConnected = Boolean(player?.isConnected);
@@ -385,6 +442,7 @@ export class RoomManager {
   leaveRoom(roomCode: string, playerId: string): void {
     const room = this.getRoom(roomCode);
     if (!room) return;
+    this.cancelDisconnectTimer(room.roomCode, playerId);
     this.socketsByRoom.get(room.roomCode)?.delete(playerId);
 
     const player = room.players.find((p) => p.id === playerId);

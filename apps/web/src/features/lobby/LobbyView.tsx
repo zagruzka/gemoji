@@ -1,3 +1,4 @@
+import { SpaceteamConfigSchema } from "@gemoji/game-spaceteam";
 import { UndercoverConfigSchema } from "@gemoji/game-undercover";
 import { UnoConfigSchema } from "@gemoji/game-uno";
 import { WordtrapConfigSchema } from "@gemoji/game-wordtrap";
@@ -6,6 +7,7 @@ import { CheckIcon, CopyIcon, CrownIcon, HelpCircleIcon, PlayIcon, UserXIcon } f
 import { useState } from "react";
 import { AvatarBadge, GameButton, GamePanel } from "../../components/game-ui";
 import { GAME_UI_CATALOG } from "../../games/registry";
+import { SpaceteamSettings } from "../../games/spaceteam/SpaceteamSettings";
 import { UndercoverSettings } from "../../games/undercover/UndercoverSettings";
 import { UnoSettings } from "../../games/uno/UnoSettings";
 import { WordtrapSettings } from "../../games/wordtrap/WordtrapSettings";
@@ -141,6 +143,12 @@ export function LobbyView({
           ) : room.gameId === "uno" ? (
             <UnoSettings
               config={UnoConfigSchema.parse(room.config ?? {})}
+              isHost={isHost}
+              onChange={(patch) => onUpdateConfig(patch)}
+            />
+          ) : room.gameId === "spaceteam" ? (
+            <SpaceteamSettings
+              config={SpaceteamConfigSchema.parse(room.config ?? {})}
               isHost={isHost}
               onChange={(patch) => onUpdateConfig(patch)}
             />

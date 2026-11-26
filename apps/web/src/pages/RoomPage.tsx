@@ -1,3 +1,4 @@
+import type { SpaceteamPlayerView } from "@gemoji/game-spaceteam";
 import type { UndercoverPlayerView } from "@gemoji/game-undercover";
 import type { UnoPlayerView } from "@gemoji/game-uno";
 import type { WordtrapPlayerView } from "@gemoji/game-wordtrap";
@@ -12,6 +13,7 @@ import {
   ArrowLeftIcon,
   BookOpenIcon,
   ClockIcon,
+  HeartIcon,
   LogOutIcon,
   MessageCircleIcon,
   UsersIcon,
@@ -42,6 +44,7 @@ import { useCountdown } from "../features/connection/useCountdown";
 import { useGameSocket } from "../features/connection/useGameSocket";
 import { LobbyView } from "../features/lobby/LobbyView";
 import { GAME_UI_CATALOG, saveSelectedGameId } from "../games/registry";
+import { SpaceteamBoard } from "../games/spaceteam/SpaceteamBoard";
 import { UndercoverBoard } from "../games/undercover/UndercoverBoard";
 import { UnoBoard } from "../games/uno/UnoBoard";
 import { WordtrapBoard } from "../games/wordtrap/WordtrapBoard";
@@ -395,7 +398,15 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
 
   return (
     <div className="relative flex min-h-dvh flex-col px-2 py-4 sm:px-4 sm:py-6">
-      <LowPolyBackground theme={room?.gameId === "uno" ? "uno" : "arcade"} />
+      <LowPolyBackground
+        theme={
+          room?.gameId === "uno"
+            ? "uno"
+            : room?.gameId === "spaceteam"
+              ? "space"
+              : "arcade"
+        }
+      />
 
       {/* Persistent Top HUD Bar */}
       <header className="relative mx-auto mb-4 flex w-full max-w-2xl flex-wrap items-center justify-between gap-2">
@@ -427,7 +438,7 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
             />
           )}
 
-          {room?.status === "PLAYING" && (
+          {room?.status === "PLAYING" && room?.gameId !== "spaceteam" && (
             <HudPill
               accent={remainingSec !== null && remainingSec <= 10 ? "pink" : "green"}
               icon={<ClockIcon className="h-4 w-4" />}
@@ -435,6 +446,26 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
               value={remainingSec === null ? "∞" : `${remainingSec}d`}
             />
           )}
+
+          {room?.status === "PLAYING" &&
+            gameView?.gameId === "spaceteam" &&
+            (() => {
+              const spaceView = gameView.view as SpaceteamPlayerView;
+              return (
+                <HudPill
+                  accent={
+                    spaceView.hullHp <= 25
+                      ? "pink"
+                      : spaceView.hullHp <= 50
+                        ? "gold"
+                        : "green"
+                  }
+                  icon={<HeartIcon className="h-4 w-4 fill-current" />}
+                  label="Hull"
+                  value={`${spaceView.hullHp} HP`}
+                />
+              );
+            })()}
         </div>
 
         <div className="relative flex items-center gap-2">
@@ -557,6 +588,17 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
             view={gameView.view as UnoPlayerView}
             isHost={isHost}
             remainingSec={remainingSec}
+            onlineById={onlineById}
+            onAction={(actionType, data) =>
+              send({ type: "GAME_ACTION", payload: { actionType, data } })
+            }
+            onPlayAgain={() => send({ type: "ROOM_START_GAME", payload: {} })}
+            onReturnLobby={() => send({ type: "ROOM_RETURN_LOBBY", payload: {} })}
+          />
+        ) : gameView.gameId === "spaceteam" ? (
+          <SpaceteamBoard
+            view={gameView.view as SpaceteamPlayerView}
+            isHost={isHost}
             onlineById={onlineById}
             onAction={(actionType, data) =>
               send({ type: "GAME_ACTION", payload: { actionType, data } })
@@ -713,6 +755,47 @@ export function RoomPage({ roomCode, onExitHome, onNotify }: RoomPageProps) {
                 sebelum pemain berikutnya jalan, lawan bisa menekan <strong>Tangkap!</strong>{" "}
                 untuk memberi penalti <strong>+2 kartu</strong>. Pemain pertama yang kartunya
                 habis langsung menang!
+              </p>
+            </div>
+          </div>
+        </GamePanel>
+      </GameModal>
+
+      {/* Spaceteam How-to-Play Modal */}
+      <GameModal
+        open={showRulesModal && room?.gameId === "spaceteam"}
+        onClose={() => setShowRulesModal(false)}
+      >
+        <GamePanel
+          title="Cara Bermain Spaceteam"
+          ribbonColor="pink"
+          onClose={() => setShowRulesModal(false)}
+          className="w-full max-w-md"
+        >
+          <div className="space-y-3 overflow-y-auto pr-1 text-sm font-bold text-[#4e3e4d]">
+            <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+              <div className="font-display text-base text-[#1b6d34]">1. 3 Panel &amp; Komunikasi Suara</div>
+              <p>
+                Layar terbagi 3: <strong>Instruksi</strong> (atas), <strong>Status Panel</strong>{" "}
+                (tengah), dan <strong>Modul Kontrol</strong> (bawah). Perintah di layarmu ditujukan
+                untuk modul milik temanmu, jadi bacakan dengan jelas lewat suara!
+              </p>
+            </div>
+            <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+              <div className="font-display text-base text-[#c72258]">2. Sektor 1–2 Langsung, Sektor 3+ Bersyarat</div>
+              <p>
+                Di Sektor 1–2 perintah bersifat langsung. Mulai Sektor 3, muncul perintah bersyarat{" "}
+                <strong>JIKA / SELAIN ITU</strong> yang bergantung pada indikator Status Panel di
+                layar rekan tim. Semua modul wajib ditekan <strong>OK</strong> untuk konfirmasi.
+              </p>
+            </div>
+            <div className="rounded-2xl border-2 border-[#d8cfa3] bg-[#fffbe6] p-3">
+              <div className="font-display text-base text-[#6540bb]">3. Jaga Hull HP &amp; Tuntaskan Semua Sektor</div>
+              <p>
+                Salah tekan OK mengurangi <strong>-10 HP</strong> dan waktu habis mengurangi{" "}
+                <strong>-10 HP</strong>. Setiap selesai sektor, pesawat melakukan{" "}
+                <strong>Warp Jump</strong> (+15 HP) dan modul diacak ulang. Selesaikan semua sektor
+                sebelum Hull mencapai 0 HP untuk menang bersama!
               </p>
             </div>
           </div>

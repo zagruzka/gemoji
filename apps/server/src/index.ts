@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { cors } from "@elysiajs/cors";
 import { gameRegistry, type GameMeta } from "@gemoji/game-core";
+import { spaceteamGameModule } from "@gemoji/game-spaceteam";
 import { undercoverGameModule } from "@gemoji/game-undercover";
 import { unoGameModule } from "@gemoji/game-uno";
 import { wordtrapGameModule } from "@gemoji/game-wordtrap";
@@ -8,13 +9,14 @@ import { ClientMessageSchema, type ServerMessage } from "@gemoji/shared";
 import { Elysia, t } from "elysia";
 import { createGuestToken, verifyGuestToken } from "./auth/guest";
 import { seedDefaultWordsIfEmpty, seedWordtrapWordsIfEmpty } from "./db";
-import { RoomManager } from "./rooms/manager";
+import { RoomManager, type ClientSocketSink } from "./rooms/manager";
 import { InMemoryRoomStore } from "./rooms/store";
 
 // Register active game modules
 gameRegistry.register(undercoverGameModule);
 gameRegistry.register(wordtrapGameModule);
 gameRegistry.register(unoGameModule);
+gameRegistry.register(spaceteamGameModule);
 
 // Ensure SQLite word libraries are seeded on startup
 const wordCount = seedDefaultWordsIfEmpty();
@@ -23,15 +25,6 @@ const wordtrapWordCount = seedWordtrapWordsIfEmpty();
 const roomManager = new RoomManager(new InMemoryRoomStore(), gameRegistry);
 
 const UPCOMING_GAMES: GameMeta[] = [
-  {
-    id: "spaceteam",
-    name: "Spaceteam",
-    description:
-      "Kerja sama di tengah kepanikan, tekan tombol sesuai instruksi teman sebelum pesawatmu meledak!",
-    minPlayers: 2,
-    maxPlayers: 8,
-    status: "coming_soon",
-  },
   {
     id: "ludo",
     name: "Ludo",
@@ -57,6 +50,7 @@ interface WsClientState {
   sessionToken: string;
   roomCode: string | null;
   lastSeenAt: number;
+  sink: ClientSocketSink;
   closeSocket: () => void;
 }
 
@@ -69,7 +63,7 @@ setInterval(() => {
     if (now - state.lastSeenAt > WS_STALE_TIMEOUT_MS) {
       wsStates.delete(raw);
       if (state.roomCode) {
-        roomManager.handleDisconnect(state.roomCode, state.playerId);
+        roomManager.handleDisconnect(state.roomCode, state.playerId, state.sink);
       }
       try {
         state.closeSocket();
@@ -184,11 +178,13 @@ const app = new Elysia()
     open(ws) {
       const verifiedId = verifyGuestToken(ws.data.query.token);
       const { playerId, sessionToken } = createGuestToken(verifiedId ?? undefined);
+      const sink: ClientSocketSink = { send: (m) => ws.send(m) };
       wsStates.set(ws.raw, {
         playerId,
         sessionToken,
         roomCode: null,
         lastSeenAt: Date.now(),
+        sink,
         closeSocket: () => ws.close(),
       });
 
@@ -227,7 +223,7 @@ const app = new Elysia()
             state.playerId,
             msg.payload.nickname,
             msg.payload.avatar,
-            { send: (m) => ws.send(m) },
+            state.sink,
           );
           if (!result.ok) {
             sendError("JOIN_FAILED", result.error);
@@ -304,7 +300,7 @@ const app = new Elysia()
     close(ws) {
       const state = wsStates.get(ws.raw);
       if (state?.roomCode) {
-        roomManager.handleDisconnect(state.roomCode, state.playerId);
+        roomManager.handleDisconnect(state.roomCode, state.playerId, state.sink);
       }
       wsStates.delete(ws.raw);
     },

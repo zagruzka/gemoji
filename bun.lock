@@ -15,6 +15,7 @@
       "dependencies": {
         "@elysiajs/cors": "^1.4.3",
         "@gemoji/game-core": "workspace:*",
+        "@gemoji/game-spaceteam": "workspace:*",
         "@gemoji/game-undercover": "workspace:*",
         "@gemoji/game-uno": "workspace:*",
         "@gemoji/game-wordtrap": "workspace:*",
@@ -29,6 +30,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@gemoji/game-core": "workspace:*",
+        "@gemoji/game-spaceteam": "workspace:*",
         "@gemoji/game-undercover": "workspace:*",
         "@gemoji/game-uno": "workspace:*",
         "@gemoji/game-wordtrap": "workspace:*",
@@ -52,6 +54,15 @@
       "version": "0.1.0",
       "dependencies": {
         "@gemoji/shared": "workspace:*",
+      },
+    },
+    "packages/games/spaceteam": {
+      "name": "@gemoji/game-spaceteam",
+      "version": "0.1.0",
+      "dependencies": {
+        "@gemoji/game-core": "workspace:*",
+        "@gemoji/shared": "workspace:*",
+        "zod": "^3.24.2",
       },
     },
     "packages/games/undercover": {
@@ -101,6 +112,8 @@
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@2.2.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw=="],
 
     "@gemoji/game-core": ["@gemoji/game-core@workspace:packages/game-core"],
+
+    "@gemoji/game-spaceteam": ["@gemoji/game-spaceteam@workspace:packages/games/spaceteam"],
 
     "@gemoji/game-undercover": ["@gemoji/game-undercover@workspace:packages/games/undercover"],
 

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { GameRegistry } from "@gemoji/game-core";
+import { spaceteamGameModule, type SpaceteamPlayerView } from "@gemoji/game-spaceteam";
 import { undercoverGameModule, type UndercoverPlayerView } from "@gemoji/game-undercover";
 import { unoGameModule, type UnoPlayerView } from "@gemoji/game-uno";
 import { wordtrapGameModule, type WordtrapPlayerView } from "@gemoji/game-wordtrap";
@@ -189,7 +190,10 @@ describe("RoomManager integration (Lobby + Chat + Undercover)", () => {
   test("auto-shuts down room after emptyRoomTtlMs when all players offline/left, and cancels if someone rejoins", async () => {
     const registry = new GameRegistry();
     registry.register(undercoverGameModule);
-    const manager = new RoomManager(new InMemoryRoomStore(), registry, { emptyRoomTtlMs: 60 });
+    const manager = new RoomManager(new InMemoryRoomStore(), registry, {
+      emptyRoomTtlMs: 60,
+      disconnectGraceMs: 0,
+    });
 
     const room = manager.createRoom("undercover");
     const s1 = createMockSink();
@@ -262,5 +266,105 @@ describe("RoomManager integration (Lobby + Chat + Undercover)", () => {
     ).toBeNull();
     const vAfter = getLatestUno(activeId === "p1" ? s1.sent : s2.sent)!;
     expect(vAfter.me.hand.length).toBe(8);
+  });
+
+  test("Spaceteam room flow: create, configure, start 2-player mission with 6 modules each", () => {
+    const registry = new GameRegistry();
+    registry.register(spaceteamGameModule);
+    const manager = new RoomManager(new InMemoryRoomStore(), registry);
+
+    const room = manager.createRoom("spaceteam");
+    const s1 = createMockSink();
+    const s2 = createMockSink();
+    expect(manager.joinRoom(room.roomCode, "p1", "Kapten", "fox", s1.sink)).toEqual({
+      ok: true,
+      isHost: true,
+    });
+    expect(manager.joinRoom(room.roomCode, "p2", "Teknisi", "cat", s2.sink)).toEqual({
+      ok: true,
+      isHost: false,
+    });
+    expect(
+      manager.updateConfig(room.roomCode, "p1", {
+        config: { difficulty: "normal", totalSectors: 3 },
+      }),
+    ).toBeNull();
+    expect(manager.startGame(room.roomCode, "p1")).toBeNull();
+
+    const getLatestSpace = (sent: ServerMessage[]): SpaceteamPlayerView | undefined => {
+      for (let i = sent.length - 1; i >= 0; i--) {
+        const msg = sent[i];
+        if (msg?.type === "GAME_STATE_VIEW" && msg.payload.gameId === "spaceteam") {
+          return msg.payload.view as SpaceteamPlayerView;
+        }
+      }
+      return undefined;
+    };
+
+    const v1 = getLatestSpace(s1.sent)!;
+    const v2 = getLatestSpace(s2.sent)!;
+    expect(v1.phase).toBe("READY_CHECK");
+    expect(v1.hullHp).toBe(100);
+    expect(v1.totalSectors).toBe(3);
+    expect(v1.me.modules.length).toBe(6);
+    expect(v2.me.modules.length).toBe(6);
+    expect(v1.me.parameter).not.toBeNull();
+
+    // Kedua pemain tekan Ready -> langsung masuk fase countdown SECTOR_PREP
+    expect(manager.handleGameAction(room.roomCode, "p1", { actionType: "PLAYER_READY", data: {} })).toBeNull();
+    expect(getLatestSpace(s1.sent)?.phase).toBe("READY_CHECK");
+    expect(manager.handleGameAction(room.roomCode, "p2", { actionType: "PLAYER_READY", data: {} })).toBeNull();
+    expect(getLatestSpace(s1.sent)?.phase).toBe("SECTOR_PREP");
+  });
+
+  test("page refresh within disconnectGraceMs does NOT mark player offline, migrate host, or spam offline/online chat", async () => {
+    const registry = new GameRegistry();
+    registry.register(undercoverGameModule);
+    const manager = new RoomManager(new InMemoryRoomStore(), registry, {
+      disconnectGraceMs: 60,
+    });
+
+    const room = manager.createRoom("undercover");
+    const s1 = createMockSink();
+    const s2 = createMockSink();
+    expect(manager.joinRoom(room.roomCode, "p1", "Budi", "fox", s1.sink)).toEqual({
+      ok: true,
+      isHost: true,
+    });
+    expect(manager.joinRoom(room.roomCode, "p2", "Ani", "cat", s2.sink)).toEqual({
+      ok: true,
+      isHost: false,
+    });
+
+    // Simulasi Host (p1) refresh halaman: disconnect lalu join lagi dalam 20ms (< 60ms grace)
+    manager.handleDisconnect(room.roomCode, "p1", s1.sink);
+    expect(room.players.find((p) => p.id === "p1")?.isConnected).toBe(true);
+    expect(room.hostId).toBe("p1");
+
+    await Bun.sleep(20);
+    const s1Refreshed = createMockSink();
+    expect(manager.joinRoom(room.roomCode, "p1", "Budi", "fox", s1Refreshed.sink)).toEqual({
+      ok: true,
+      isHost: true,
+    });
+
+    // Stale close dari socket lama setelah socket baru terpasang harus diabaikan
+    manager.handleDisconnect(room.roomCode, "p1", s1.sink);
+
+    await Bun.sleep(75);
+    expect(room.players.find((p) => p.id === "p1")?.isConnected).toBe(true);
+    expect(room.hostId).toBe("p1");
+    expect(
+      room.chatHistory.some(
+        (m) => m.content.includes("sedang offline") || m.content.includes("kembali online"),
+      ),
+    ).toBe(false);
+
+    // Jika benar-benar putus > 60ms, barulah ditandai offline & host berpindah ke p2
+    manager.handleDisconnect(room.roomCode, "p1", s1Refreshed.sink);
+    await Bun.sleep(75);
+    expect(room.players.find((p) => p.id === "p1")?.isConnected).toBe(false);
+    expect(room.hostId).toBe("p2");
+    expect(room.chatHistory.some((m) => m.content.includes("sedang offline"))).toBe(true);
   });
 });

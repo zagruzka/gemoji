@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@gemoji/game-core": "workspace:*",
+    "@gemoji/game-spaceteam": "workspace:*",
     "@gemoji/game-undercover": "workspace:*",
     "@gemoji/game-uno": "workspace:*",
     "@gemoji/game-wordtrap": "workspace:*",

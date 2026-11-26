@@ -658,14 +658,14 @@ export function UnoBoard({
     ? canPlaySelectedOnTable
       ? "Klik meja untuk memainkan kartu"
       : view.pendingDraw > 0
-        ? `Penalti +${view.pendingDraw}! Tumpuk ${view.pendingDrawType === "wild4" ? "+4" : "+2/+4"} atau klik Deck`
+        ? `Penalti +${view.pendingDraw}! Tumpuk ${view.pendingDrawType === "wild4" ? "+4" : "+2/+4"} atau ambil kartu`
         : view.me.canPass
           ? view.me.playableCardIds.length > 0
             ? "Pilih kartu & klik meja, atau klik Skip"
             : "Tidak ada kartu cocok, klik Skip!"
           : view.me.playableCardIds.length > 0
             ? "Giliranmu! Angkat kartu lalu klik meja"
-            : "Giliranmu! Tidak ada kartu cocok, klik Deck"
+            : "Giliranmu! Tidak ada kartu cocok, ambil kartu!"
     : currentTurnPlayer && onlineById?.[currentTurnPlayer.id] === false
       ? `${currentTurnPlayer.nickname} sedang offline...`
       : `Menunggu giliran ${currentTurnPlayer?.nickname ?? "..."}...`;
@@ -806,6 +806,11 @@ export function UnoBoard({
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0.5 rounded-[10px] border-2 border-white/40"
               />
+              {view.pendingDraw > 1 && (
+                <span className="font-display pointer-events-none absolute -top-3.5 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-[#fff5a8] bg-gradient-to-b from-[#ff5a5f] to-[#c72258] px-2.5 py-0.5 text-xs font-extrabold text-white shadow-[0_3px_0_#7d1136]">
+                  +{view.pendingDraw}
+                </span>
+              )}
               <span></span>
               <UnoBackLogo />
               <span className="rounded-full bg-black/30 px-2 py-0.2 text-[10px]">
@@ -815,7 +820,7 @@ export function UnoBoard({
             <span
               className={`text-[11px] font-extrabold ${mustDrawDeck ? "text-[#c72258]" : "text-[#786b51]"}`}
             >
-              {mustDrawDeck ? "Ketuk Deck!" : "Deck"}
+              {mustDrawDeck ? "Ambil!" : "Deck"}
             </span>
           </div>
 
